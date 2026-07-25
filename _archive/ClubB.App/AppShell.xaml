@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:Clubs.Shared.Views;assembly=Clubs.Shared"
+       x:Class="ClubB.App.AppShell">
+
+    <TabBar>
+        <ShellContent Title="Home"
+                      ContentTemplate="{DataTemplate views:HomePage}"
+                      Route="HomePage" />
+        <ShellContent Title="Map"
+                      ContentTemplate="{DataTemplate views:MapPage}"
+                      Route="MapPage" />
+        <ShellContent Title="Events"
+                      ContentTemplate="{DataTemplate views:EventsPage}"
+                      Route="EventsPage" />
+    </TabBar>
+
+</Shell>

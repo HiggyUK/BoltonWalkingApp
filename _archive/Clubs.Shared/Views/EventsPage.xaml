@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Clubs.Shared.ViewModels"
+             xmlns:models="clr-namespace:Clubs.Shared.Models"
+             x:DataType="vm:EventsViewModel"
+             x:Class="Clubs.Shared.Views.EventsPage"
+             Title="Upcoming Events">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <ActivityIndicator Grid.Row="0"
+                            IsRunning="{Binding IsBusy}"
+                            IsVisible="{Binding IsBusy}"
+                            Color="{DynamicResource Primary}" />
+
+        <CollectionView Grid.Row="1"
+                         ItemsSource="{Binding Events}"
+                         SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:EventItem">
+                    <VerticalStackLayout Padding="16,12" Spacing="4">
+                        <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
+                        <Label Text="{Binding StartsAt, StringFormat='{0:dddd d MMMM, h:mm tt}'}" FontSize="13" TextColor="Gray" />
+                        <Label Text="{Binding Location}" FontSize="13" TextColor="Gray" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

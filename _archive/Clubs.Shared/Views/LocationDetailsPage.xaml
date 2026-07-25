@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Clubs.Shared.ViewModels"
+             xmlns:models="clr-namespace:Clubs.Shared.Models"
+             xmlns:converters="clr-namespace:Clubs.Shared.Converters"
+             x:DataType="vm:LocationDetailsViewModel"
+             x:Class="Clubs.Shared.Views.LocationDetailsPage"
+             x:Name="PageRoot"
+             Title="{Binding Location.Name}">
+
+    <ContentPage.Resources>
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converters:IntToBoolConverter x:Key="IntToBoolConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                IsVisible="{Binding IsBusy}"
+                                Color="{DynamicResource Primary}" />
+
+            <Image Source="{Binding Location.PhotoUrl}"
+                   Aspect="AspectFill"
+                   HeightRequest="180"
+                   IsVisible="{Binding Location.PhotoUrl, Converter={StaticResource StringToBoolConverter}}" />
+
+            <Label Text="{Binding Location.Name}" FontSize="24" FontAttributes="Bold" />
+            <Label Text="{Binding Location.FullDescription}" FontSize="15" />
+
+            <Label Text="Downloads"
+                   FontSize="17"
+                   FontAttributes="Bold"
+                   Margin="0,12,0,0"
+                   IsVisible="{Binding Location.Files.Count, Converter={StaticResource IntToBoolConverter}}" />
+
+            <CollectionView ItemsSource="{Binding Location.Files}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:DownloadableFile">
+                        <Border Padding="12" Margin="0,4" Stroke="LightGray" StrokeShape="RoundRectangle 8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                    <Label Text="{Binding FileName}" FontAttributes="Bold" />
+                                    <Label Text="{Binding Description}" FontSize="12" TextColor="Gray" />
+                                </VerticalStackLayout>
+                                <!-- Bind back to the page's BindingContext (the view model) via
+                                     x:Reference, since inside this DataTemplate the implicit
+                                     BindingContext is the DownloadableFile, not the view model. -->
+                                <Button Grid.Column="1"
+                                        Text="Download"
+                                        Padding="10,6"
+                                        Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.DownloadFileCommand}"
+                                        CommandParameter="{Binding .}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="{Binding StatusMessage}"
+                   FontSize="13"
+                   TextColor="{DynamicResource Primary}"
+                   IsVisible="{Binding StatusMessage, Converter={StaticResource StringToBoolConverter}}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

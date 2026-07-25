@@ -1,0 +1,66 @@
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using BoltonWalking.App.Models;
+using BoltonWalking.App.Services;
+
+namespace BoltonWalking.App.ViewModels;
+
+public partial class RoutesViewModel : ObservableObject
+{
+    private readonly IRoutesService routesService;
+
+    public ObservableCollection<WalkingRoute> Routes { get; } = new();
+
+    [ObservableProperty]
+    private bool isBusy;
+
+    // The route currently shown in the brief-info popup, or null if none is shown.
+    [ObservableProperty]
+    private WalkingRoute? selectedRoute;
+
+    // Kept alongside SelectedRoute purely so XAML can bind IsVisible without a converter.
+    [ObservableProperty]
+    private bool isPopupVisible;
+
+    public RoutesViewModel(IRoutesService routesService)
+    {
+        this.routesService = routesService;
+    }
+
+    [RelayCommand]
+    private async Task LoadRoutesAsync()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            Routes.Clear();
+
+            var items = await routesService.GetRoutesAsync();
+            foreach (var item in items)
+                Routes.Add(item);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    // Called when a pin is tapped - shows the brief popup for that route.
+    [RelayCommand]
+    private void PinTapped(WalkingRoute route)
+    {
+        SelectedRoute = route;
+        IsPopupVisible = true;
+    }
+
+    // Called when the popup is dismissed without navigating onward.
+    [RelayCommand]
+    private void DismissPopup()
+    {
+        IsPopupVisible = false;
+        SelectedRoute = null;
+    }
+}

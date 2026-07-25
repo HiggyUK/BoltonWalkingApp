@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0-android;net9.0-ios</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>BoltonWalking.App</RootNamespace>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <ApplicationTitle>Bolton Walking and Outdoors Appreciation Society</ApplicationTitle>
+    <!-- Placeholder - replace with your real registered package/bundle id before publishing -->
+    <ApplicationId>com.boltonwalking.app</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Real club crest (pulled from boltonwalking.co.uk), layered over a solid black background -->
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\bwoas_crest.png" Color="#000000" />
+    <MauiSplashScreen Include="Resources\AppIcon\bwoas_crest.png" Color="#000000" BaseSize="220,220" />
+    <MauiImage Include="Resources\Images\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Update="Views\**\*.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Resources\Styles\**\*.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- MVVM source generators (INotifyPropertyChanged, [ObservableProperty], [RelayCommand]) -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <!-- Map control (Pin, Map, clustering, custom images) - pinned to match the Microsoft.Maui.Sdk workload version -->
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="9.0.120" />
+    <!-- File save/share (for GPX route downloads) -->
+    <PackageReference Include="CommunityToolkit.Maui" Version="9.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>

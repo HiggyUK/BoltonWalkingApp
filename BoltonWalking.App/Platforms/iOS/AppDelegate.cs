@@ -1,0 +1,9 @@
+using Foundation;
+
+namespace BoltonWalking.App;
+
+[Register("AppDelegate")]
+public class AppDelegate : MauiUIApplicationDelegate
+{
+    protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+}

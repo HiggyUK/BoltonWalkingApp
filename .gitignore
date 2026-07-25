@@ -1,0 +1,23 @@
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+*.apk
+*.aab
+*.ipa
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.userosscache
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets - never commit these
+google-services.json
+GoogleService-Info.plist
+*.keystore
+*.jks

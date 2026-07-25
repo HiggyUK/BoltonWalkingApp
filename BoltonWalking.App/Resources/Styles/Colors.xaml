@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                     x:Class="BoltonWalking.App.Resources.Styles.AppColors">
+
+    <!-- Bolton Walking and Outdoors Appreciation Society palette - sampled
+         directly from the club crest (boltonwalking.co.uk favicon/og:image). -->
+    <Color x:Key="Primary">#E0232B</Color>
+    <Color x:Key="Secondary">#000000</Color>
+
+    <!-- The crest's middle ring colour - used for subtle section backgrounds/dividers. -->
+    <Color x:Key="Charcoal">#404042</Color>
+    <Color x:Key="SurfaceMuted">#F5F5F5</Color>
+    <Color x:Key="TextMuted">#5B5B5B</Color>
+
+</ResourceDictionary>

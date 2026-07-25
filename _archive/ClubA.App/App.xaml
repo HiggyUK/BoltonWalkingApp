@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sharedStyles="clr-namespace:Clubs.Shared.Resources.Styles;assembly=Clubs.Shared"
+             x:Class="ClubA.App.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Club A's own colour palette, defined locally in this project -->
+                <ResourceDictionary Source="Resources/Styles/ClubColors.xaml" />
+                <!-- Shared styles/behaviour that both clubs use -->
+                <sharedStyles:SharedStyles />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BoltonWalking.App.Views.BookPage"
+             Title="Book">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- Full-bleed hero photo, same treatment as About -->
+            <Image Source="hero_book.jpg"
+                   Aspect="AspectFill"
+                   HeightRequest="180" />
+
+            <VerticalStackLayout Padding="24" Spacing="14">
+
+                <Image Source="bwoas_crest.png"
+                       HeightRequest="90"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       Margin="0,-55,0,0" />
+
+                <Label Text="Book a Walk"
+                       FontSize="23"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="{DynamicResource Secondary}" />
+
+                <Label Text="See what's coming up and reserve your place on our Ticket Tailor booking page."
+                       FontSize="16"
+                       HorizontalTextAlignment="Center" />
+
+                <Button Text="Open Booking Page"
+                        ImageSource="icon_book_white.svg"
+                        ContentLayout="Left,10"
+                        BackgroundColor="{DynamicResource Primary}"
+                        TextColor="White"
+                        Clicked="OnOpenBookingPageClicked" />
+
+                <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 10"
+                        Padding="14"
+                        Margin="0,4,0,0">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="BOOKING WINDOWS"
+                               FontSize="11"
+                               FontAttributes="Bold"
+                               CharacterSpacing="1"
+                               TextColor="{DynamicResource TextMuted}"
+                               HorizontalOptions="Center" />
+                        <Label FontSize="14" TextColor="{DynamicResource Secondary}" HorizontalTextAlignment="Center">
+                            <Label.Text>Monday walks open Thursday 18:00&#10;Wednesday walks open Sunday 18:00</Label.Text>
+                        </Label>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <!-- Matches ClubA's Primary colour (Resources/Styles/ClubColors.xaml) so the
+         native splash/status bar doesn't flash a different colour before the
+         MAUI splash screen takes over. -->
+    <color name="colorPrimary">#0B5FA5</color>
+    <color name="colorPrimaryDark">#083C6B</color>
+    <color name="navigationBarColor">#0B5FA5</color>
+</resources>

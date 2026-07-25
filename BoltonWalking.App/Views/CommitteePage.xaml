@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BoltonWalking.App.ViewModels"
+             xmlns:models="clr-namespace:BoltonWalking.App.Models"
+             xmlns:converters="clr-namespace:BoltonWalking.App.Converters"
+             x:DataType="vm:CommitteeViewModel"
+             x:Class="BoltonWalking.App.Views.CommitteePage"
+             Title="Committee">
+
+    <ContentPage.Resources>
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Label Text="Meet the Committee"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Secondary}" />
+
+            <Label Text="BWOAS is run entirely by volunteers. Here's who keeps the walks happening."
+                   FontSize="15"
+                   TextColor="{DynamicResource TextMuted}" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                IsVisible="{Binding IsBusy}"
+                                Color="{DynamicResource Primary}" />
+
+            <CollectionView ItemsSource="{Binding Members}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:CommitteeMember">
+                        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                                Stroke="Transparent"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="16"
+                                Margin="0,0,0,12">
+                            <Grid ColumnDefinitions="64,*" ColumnSpacing="14">
+
+                                <Border Grid.Column="0"
+                                        WidthRequest="64"
+                                        HeightRequest="64"
+                                        StrokeShape="RoundRectangle 32"
+                                        Stroke="Transparent"
+                                        BackgroundColor="#D8D8D8"
+                                        VerticalOptions="Start"
+                                        Padding="0">
+                                    <Image Source="{Binding PhotoUrl}" Aspect="AspectFill" />
+                                </Border>
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="6">
+                                    <Label FontSize="17" FontAttributes="Bold">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Name}" />
+                                                <Span Text="  " />
+                                                <Span Text="{Binding Role}" TextColor="{DynamicResource Primary}" FontSize="13" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label Text="{Binding Quote}"
+                                           FontAttributes="Italic"
+                                           FontSize="14"
+                                           TextColor="{DynamicResource TextMuted}"
+                                           IsVisible="{Binding Quote, Converter={StaticResource StringToBoolConverter}}" />
+                                    <Label Text="{Binding Bio}" FontSize="14" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

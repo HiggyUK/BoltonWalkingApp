@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:BoltonWalking.App.Views"
+       x:Class="BoltonWalking.App.AppShell">
+
+    <TabBar>
+        <ShellContent Title="About"
+                      Icon="icon_about.svg"
+                      ContentTemplate="{DataTemplate views:AboutPage}"
+                      Route="AboutPage" />
+        <ShellContent Title="Book"
+                      Icon="icon_book.svg"
+                      ContentTemplate="{DataTemplate views:BookPage}"
+                      Route="BookPage" />
+        <ShellContent Title="Routes"
+                      Icon="icon_routes.svg"
+                      ContentTemplate="{DataTemplate views:RoutesPage}"
+                      Route="RoutesPage" />
+        <ShellContent Title="Committee"
+                      Icon="icon_committee.svg"
+                      ContentTemplate="{DataTemplate views:CommitteePage}"
+                      Route="CommitteePage" />
+    </TabBar>
+
+</Shell>

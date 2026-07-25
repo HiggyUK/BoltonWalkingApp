@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Clubs.Shared.ViewModels"
+             x:DataType="vm:HomeViewModel"
+             x:Class="Clubs.Shared.Views.HomePage"
+             Title="Home">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16" VerticalOptions="Center">
+
+            <Label Text="{Binding ClubName}"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   TextColor="{DynamicResource Primary}" />
+
+            <Label Text="{Binding WelcomeMessage}"
+                   FontSize="16"
+                   HorizontalOptions="Center" />
+
+            <Button Text="Upcoming Events"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="White"
+                    Clicked="OnEventsClicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
