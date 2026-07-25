@@ -16,6 +16,9 @@
 .DS_Store
 Thumbs.db
 
+# Claude Code local tooling state (machine/session specific, not project source)
+.claude/
+
 # Secrets - never commit these
 google-services.json
 GoogleService-Info.plist

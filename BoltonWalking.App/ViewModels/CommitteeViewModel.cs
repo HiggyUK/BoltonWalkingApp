@@ -36,17 +36,18 @@ public partial class CommitteeViewModel : ObservableObject
             Members.Clear();
 
             var documents = await firestoreClient.GetCollectionAsync("committeeMembers");
-            foreach (var (_, fields) in documents)
+            var members = documents.Select(d => new CommitteeMember
             {
-                Members.Add(new CommitteeMember
-                {
-                    Name = FirestoreClient.GetString(fields, "name"),
-                    Role = FirestoreClient.GetString(fields, "role"),
-                    Quote = FirestoreClient.GetNullableString(fields, "quote"),
-                    Bio = FirestoreClient.GetString(fields, "bio"),
-                    PhotoUrl = FirestoreClient.GetNullableString(fields, "photoUrl")
-                });
-            }
+                Id = int.TryParse(d.Id, out var id) ? id : 0,
+                Name = FirestoreClient.GetString(d.Fields, "name"),
+                Role = FirestoreClient.GetString(d.Fields, "role"),
+                Quote = FirestoreClient.GetNullableString(d.Fields, "quote"),
+                Bio = FirestoreClient.GetString(d.Fields, "bio"),
+                PhotoUrl = FirestoreClient.GetNullableString(d.Fields, "photoUrl")
+            }).OrderBy(m => m.Id);
+
+            foreach (var member in members)
+                Members.Add(member);
         }
         finally
         {
