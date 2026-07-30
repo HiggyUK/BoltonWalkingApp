@@ -26,10 +26,28 @@ public partial class RoutesViewModel : ObservableObject
     [ObservableProperty]
     private bool isPopupVisible;
 
+    // "All", "Easy", "Moderate", or "Hard" - which pins RoutesPage.BuildPins() should show.
+    [ObservableProperty]
+    private string selectedDifficulty = "All";
+
     public RoutesViewModel(IRoutesService routesService)
     {
         this.routesService = routesService;
     }
+
+    [RelayCommand]
+    private void FilterByDifficulty(string difficulty)
+    {
+        SelectedDifficulty = difficulty;
+    }
+
+    public IEnumerable<WalkingRoute> FilteredRoutes => SelectedDifficulty switch
+    {
+        "Easy" => Routes.Where(r => r.Difficulty == RouteDifficulty.Easy),
+        "Moderate" => Routes.Where(r => r.Difficulty == RouteDifficulty.Moderate),
+        "Hard" => Routes.Where(r => r.Difficulty == RouteDifficulty.Hard),
+        _ => Routes
+    };
 
     [RelayCommand]
     private async Task LoadRoutesAsync()

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 using BoltonWalking.App.Models;
@@ -16,6 +17,7 @@ public partial class RoutesPage : ContentPage
         InitializeComponent();
         this.viewModel = viewModel;
         BindingContext = viewModel;
+        viewModel.PropertyChanged += OnViewModelPropertyChanged;
     }
 
     protected override async void OnAppearing()
@@ -26,6 +28,12 @@ public partial class RoutesPage : ContentPage
         BuildPins();
     }
 
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(RoutesViewModel.SelectedDifficulty))
+            BuildPins();
+    }
+
     // Pins are added manually (rather than via Map.ItemsSource) so we can
     // subscribe to each pin's MarkerClicked event and drive our own popup
     // instead of the native info window.
@@ -34,7 +42,9 @@ public partial class RoutesPage : ContentPage
         RoutesMap.Pins.Clear();
         pinLookup.Clear();
 
-        foreach (var route in viewModel.Routes)
+        var routes = viewModel.FilteredRoutes.ToList();
+
+        foreach (var route in routes)
         {
             var pin = new MauiPin
             {
@@ -57,14 +67,15 @@ public partial class RoutesPage : ContentPage
             RoutesMap.Pins.Add(pin);
         }
 
-        if (viewModel.Routes.Count > 0)
+        if (routes.Count > 0)
         {
-            // Fit the camera to all routes rather than just the first one,
-            // since they're spread across the whole West Pennine Moors area.
-            var minLat = viewModel.Routes.Min(r => r.Latitude);
-            var maxLat = viewModel.Routes.Max(r => r.Latitude);
-            var minLon = viewModel.Routes.Min(r => r.Longitude);
-            var maxLon = viewModel.Routes.Max(r => r.Longitude);
+            // Fit the camera to the filtered routes rather than just the
+            // first one, since they're spread across the whole West
+            // Pennine Moors area.
+            var minLat = routes.Min(r => r.Latitude);
+            var maxLat = routes.Max(r => r.Latitude);
+            var minLon = routes.Min(r => r.Longitude);
+            var maxLon = routes.Max(r => r.Longitude);
 
             var center = new Location((minLat + maxLat) / 2, (minLon + maxLon) / 2);
             var latSpan = Math.Max(maxLat - minLat, 0.02) * 1.3;
