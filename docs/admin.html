@@ -163,7 +163,7 @@
       <input type="text" id="event-ticket-link" placeholder="https://www.tickettailor.com/events/...">
 
       <label>Booking opens</label>
-      <div class="hint" id="booking-opens-hint">Monday walks: prior Thursday 18:00 &#8226; Wednesday walks: prior Sunday 18:00. Auto-filled below - edit if needed, or clear to make it bookable immediately.</div>
+      <div class="hint" id="booking-opens-hint">Monday walks: prior Thursday 18:00 &#8226; Wednesday walks: prior Sunday 18:00. The app applies this automatically - leave blank unless this walk needs a different opening time than usual.</div>
       <div class="row">
         <input type="date" id="event-booking-date">
         <input type="time" id="event-booking-time">
@@ -539,12 +539,17 @@
     return { date: `${yyyy}-${mm}-${dd}`, time: '18:00' };
   }
 
+  // Informational only - does NOT fill in the fields. Leaving them blank is
+  // the normal case; the app applies this same rule automatically, so
+  // pre-filling here would just be one more place it could go stale or get
+  // cleared by accident.
+  const defaultHintText = document.getElementById('booking-opens-hint').textContent;
   document.getElementById('event-date').addEventListener('change', () => {
     const suggestion = suggestedBookingOpensAt(document.getElementById('event-date').value);
-    if (suggestion) {
-      document.getElementById('event-booking-date').value = suggestion.date;
-      document.getElementById('event-booking-time').value = suggestion.time;
-    }
+    const hint = document.getElementById('booking-opens-hint');
+    hint.textContent = suggestion
+      ? `This walk's day normally opens ${suggestion.date} at ${suggestion.time} - leave the fields below blank to use that automatically.`
+      : defaultHintText;
   });
 
   function toDateInputValue(isoString) {
@@ -562,7 +567,8 @@
     document.getElementById('event-start-time').value = toTimeInputValue(ev.startDateTime);
     document.getElementById('event-end-time').value = toTimeInputValue(ev.endDateTime);
     document.getElementById('event-ticket-link').value = ev.ticketLink || '';
-    // A missing/epoch bookingOpensAt means "bookable immediately" - leave the fields blank for that.
+    // A missing/epoch bookingOpensAt means "apply the standard Mon/Wed rule automatically" -
+    // leave the fields blank for that; only show a value here if it's a real override.
     const opensIsSet = ev.bookingOpensAt && !ev.bookingOpensAt.startsWith('0001-01-01');
     document.getElementById('event-booking-date').value = opensIsSet ? toDateInputValue(ev.bookingOpensAt) : '';
     document.getElementById('event-booking-time').value = opensIsSet ? toTimeInputValue(ev.bookingOpensAt) : '';
@@ -620,7 +626,10 @@
         startDateTime: `${date}T${startTime}:00`,
         endDateTime: `${date}T${endTime}:00`,
         ticketLink: ticketLink,
-        // Blank = bookable immediately, encoded as the .NET DateTime.MinValue sentinel.
+        // Blank = apply the standard Mon/Wed rule automatically (or bookable
+        // immediately if this walk isn't on one of those days) - encoded as
+        // the .NET DateTime.MinValue sentinel, which the app treats as "not
+        // explicitly overridden" rather than a literal date.
         bookingOpensAt: bookingDate ? `${bookingDate}T${bookingTime}:00` : '0001-01-01T00:00:00'
       };
 

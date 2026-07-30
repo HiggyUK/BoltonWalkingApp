@@ -33,16 +33,27 @@ public class EventsService : IEventsService
         var routeId = (int)FirestoreClient.GetDouble(fields, "routeId");
         routesById.TryGetValue(routeId, out var route);
 
+        var start = DateTime.TryParse(FirestoreClient.GetString(fields, "startDateTime"), out var s) ? s : DateTime.MinValue;
+
+        // An explicit, real bookingOpensAt overrides the standard rule (for
+        // exceptions). Anything else - missing, unparseable, or the "not
+        // set" sentinel written by the admin tools when left blank - falls
+        // back to the club's Monday/Wednesday rule computed from the walk's
+        // own date, and only becomes "always bookable" if that rule doesn't
+        // apply either (i.e. the walk isn't on a Monday or Wednesday).
+        var explicitOpens = DateTime.TryParse(FirestoreClient.GetString(fields, "bookingOpensAt"), out var o) ? o : (DateTime?)null;
+        var bookingOpensAt = explicitOpens is { } real && real > DateTime.MinValue
+            ? real
+            : EventItem.ComputeStandardBookingOpensAt(start) ?? DateTime.MinValue;
+
         return new EventItem
         {
             Id = id,
             RouteId = routeId,
-            StartDateTime = DateTime.TryParse(FirestoreClient.GetString(fields, "startDateTime"), out var start) ? start : DateTime.MinValue,
+            StartDateTime = start,
             EndDateTime = DateTime.TryParse(FirestoreClient.GetString(fields, "endDateTime"), out var end) ? end : DateTime.MinValue,
             TicketLink = FirestoreClient.GetString(fields, "ticketLink"),
-            // Missing/unparseable = always bookable, rather than locking out
-            // events created before this field existed.
-            BookingOpensAt = DateTime.TryParse(FirestoreClient.GetString(fields, "bookingOpensAt"), out var opens) ? opens : DateTime.MinValue,
+            BookingOpensAt = bookingOpensAt,
             Route = route
         };
     }

@@ -108,19 +108,20 @@ if (-not [datetime]::TryParse("$date $endTime", [ref]$endDateTime)) {
     exit 1
 }
 
+# The app itself applies the Monday/Wednesday rule automatically whenever
+# this field is left as the "not set" sentinel - so the normal path here is
+# just to accept that default. Only type a value if this walk needs a
+# different opening time than usual (an override).
 $suggested = Get-SuggestedBookingOpensAt -walkDate $startDateTime
 if ($suggested) {
-    Write-Host "`n$($startDateTime.DayOfWeek) walk - booking normally opens $($suggested.ToString('ddd d MMM, HH:mm'))." -ForegroundColor Cyan
-    $bookingOpensInput = Read-Host "Booking opens at (YYYY-MM-DD HH:mm) [Enter to accept the above]"
+    Write-Host "`n$($startDateTime.DayOfWeek) walk - the app will automatically open booking $($suggested.ToString('ddd d MMM, HH:mm'))." -ForegroundColor Cyan
 } else {
-    Write-Host "`n$($startDateTime.DayOfWeek) doesn't have a standard booking-opens rule - enter one manually." -ForegroundColor Yellow
-    $bookingOpensInput = Read-Host "Booking opens at (YYYY-MM-DD HH:mm, blank = bookable immediately)"
+    Write-Host "`n$($startDateTime.DayOfWeek) doesn't have a standard booking-opens rule - this walk will be bookable immediately unless you set a time." -ForegroundColor Yellow
 }
+$bookingOpensInput = Read-Host "Override booking-opens time? (YYYY-MM-DD HH:mm, blank to use the automatic rule above)"
 
-$bookingOpensAt = $null
-if ([string]::IsNullOrWhiteSpace($bookingOpensInput)) {
-    $bookingOpensAt = if ($suggested) { $suggested } else { [datetime]::MinValue }
-} elseif (-not [datetime]::TryParse($bookingOpensInput, [ref]$bookingOpensAt)) {
+$bookingOpensAt = [datetime]::MinValue
+if (-not [string]::IsNullOrWhiteSpace($bookingOpensInput) -and -not [datetime]::TryParse($bookingOpensInput, [ref]$bookingOpensAt)) {
     Write-Error "Could not parse booking-opens date/time."
     exit 1
 }
@@ -142,7 +143,13 @@ Write-Host "`nSaving..." -ForegroundColor Cyan
 try {
     Invoke-RestMethod -Uri "$BaseUrl/events`?documentId=$nextId" -Method Post -Headers $headers -Body $body -ContentType "application/json" | Out-Null
     $routeName = ($routes | Where-Object { $_.Id -eq $routeId }).Name
-    $bookingNote = if ($bookingOpensAt -eq [datetime]::MinValue) { "bookable immediately" } else { "booking opens $($bookingOpensAt.ToString('ddd d MMM, HH:mm'))" }
+    $bookingNote = if ($bookingOpensAt -ne [datetime]::MinValue) {
+        "booking opens $($bookingOpensAt.ToString('ddd d MMM, HH:mm')) (override)"
+    } elseif ($suggested) {
+        "booking opens $($suggested.ToString('ddd d MMM, HH:mm')) (automatic rule)"
+    } else {
+        "bookable immediately"
+    }
     Write-Host "Saved: events/$nextId - $routeName on $($startDateTime.ToString('ddd d MMM')), $($startDateTime.ToString('HH:mm'))-$($endDateTime.ToString('HH:mm')) - $bookingNote" -ForegroundColor Green
 }
 catch {
