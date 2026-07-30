@@ -24,6 +24,11 @@
         <Setter Property="Shell.TitleColor" Value="White" />
         <Setter Property="Shell.TabBarBackgroundColor" Value="White" />
         <Setter Property="Shell.TabBarForegroundColor" Value="{DynamicResource Primary}" />
+        <!-- TabBarForegroundColor alone only colours the selected icon - the
+             selected label has its own colour property and defaults to white,
+             which vanishes against the white tab bar background above. -->
+        <Setter Property="Shell.TabBarTitleColor" Value="{DynamicResource Primary}" />
+        <Setter Property="Shell.TabBarUnselectedColor" Value="#6B6B6B" />
     </Style>
 
 </ResourceDictionary>
