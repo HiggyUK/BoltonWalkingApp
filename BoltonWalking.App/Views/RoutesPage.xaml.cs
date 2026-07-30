@@ -30,7 +30,7 @@ public partial class RoutesPage : ContentPage
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(RoutesViewModel.SelectedDifficulty))
+        if (e.PropertyName is nameof(RoutesViewModel.SelectedDifficulty) or nameof(RoutesViewModel.SearchText))
             BuildPins();
     }
 
@@ -43,6 +43,7 @@ public partial class RoutesPage : ContentPage
         pinLookup.Clear();
 
         var routes = viewModel.FilteredRoutes.ToList();
+        NoResultsLabel.IsVisible = routes.Count == 0 && viewModel.Routes.Count > 0;
 
         foreach (var route in routes)
         {

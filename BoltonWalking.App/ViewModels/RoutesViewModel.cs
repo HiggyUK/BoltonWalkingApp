@@ -30,6 +30,11 @@ public partial class RoutesViewModel : ObservableObject
     [ObservableProperty]
     private string selectedDifficulty = "All";
 
+    // Free-text search against route name and venue - combined with the
+    // difficulty filter (a route must match both).
+    [ObservableProperty]
+    private string searchText = "";
+
     public RoutesViewModel(IRoutesService routesService)
     {
         this.routesService = routesService;
@@ -41,13 +46,27 @@ public partial class RoutesViewModel : ObservableObject
         SelectedDifficulty = difficulty;
     }
 
-    public IEnumerable<WalkingRoute> FilteredRoutes => SelectedDifficulty switch
+    public IEnumerable<WalkingRoute> FilteredRoutes
     {
-        "Easy" => Routes.Where(r => r.Difficulty == RouteDifficulty.Easy),
-        "Moderate" => Routes.Where(r => r.Difficulty == RouteDifficulty.Moderate),
-        "Hard" => Routes.Where(r => r.Difficulty == RouteDifficulty.Hard),
-        _ => Routes
-    };
+        get
+        {
+            var byDifficulty = SelectedDifficulty switch
+            {
+                "Easy" => Routes.Where(r => r.Difficulty == RouteDifficulty.Easy),
+                "Moderate" => Routes.Where(r => r.Difficulty == RouteDifficulty.Moderate),
+                "Hard" => Routes.Where(r => r.Difficulty == RouteDifficulty.Hard),
+                _ => Routes.AsEnumerable()
+            };
+
+            var search = SearchText.Trim();
+            if (search.Length == 0)
+                return byDifficulty;
+
+            return byDifficulty.Where(r =>
+                r.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                r.Venue.Contains(search, StringComparison.OrdinalIgnoreCase));
+        }
+    }
 
     [RelayCommand]
     private async Task LoadRoutesAsync()

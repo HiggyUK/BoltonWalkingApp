@@ -23,10 +23,15 @@
         <ToolbarItem Text="Refresh" Command="{Binding LoadRoutesCommand}" />
     </ContentPage.ToolbarItems>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <SearchBar Grid.Row="0"
+                   Placeholder="Search routes by name or venue"
+                   Text="{Binding SearchText}"
+                   BackgroundColor="White" />
 
         <!-- Difficulty filter chips - narrows which pins BuildPins() shows. -->
-        <ScrollView Grid.Row="0" Orientation="Horizontal" BackgroundColor="White">
+        <ScrollView Grid.Row="1" Orientation="Horizontal" BackgroundColor="White">
             <HorizontalStackLayout Padding="16,10" Spacing="8">
                 <Button Text="All" Style="{StaticResource FilterChipBase}"
                         TextColor="{DynamicResource Secondary}" BorderColor="#D8D8D8" BorderWidth="1"
@@ -78,7 +83,7 @@
             </HorizontalStackLayout>
         </ScrollView>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
 
             <maps:Map x:Name="RoutesMap"
                       IsShowingUser="True" />
@@ -89,6 +94,17 @@
                                 VerticalOptions="Start"
                                 Margin="0,16"
                                 Color="{DynamicResource Primary}" />
+
+            <Label x:Name="NoResultsLabel"
+                   IsVisible="False"
+                   Text="No routes match your search/filter."
+                   HorizontalOptions="Center"
+                   VerticalOptions="Start"
+                   Margin="0,16"
+                   Padding="12,8"
+                   BackgroundColor="White"
+                   TextColor="{DynamicResource TextMuted}"
+                   FontSize="14" />
 
             <Border IsVisible="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}"
                     VerticalOptions="Start"
