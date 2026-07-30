@@ -16,6 +16,20 @@
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
+  <!-- Release-signing for Play Store uploads. Keystore path/passwords come from
+       environment variables (BWOAS_KEYSTORE_PATH, BWOAS_KEYSTORE_PASSWORD,
+       BWOAS_KEY_ALIAS, BWOAS_KEY_PASSWORD) rather than being committed here -
+       set them before running a Release publish. -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release' AND $(TargetFramework.Contains('-android'))">
+    <!-- Play Store requires an .aab bundle, not a raw .apk -->
+    <AndroidPackageFormat>aab</AndroidPackageFormat>
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>$(BWOAS_KEYSTORE_PATH)</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>$(BWOAS_KEY_ALIAS)</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>$(BWOAS_KEY_PASSWORD)</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>$(BWOAS_KEYSTORE_PASSWORD)</AndroidSigningStorePass>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Real club crest (pulled from boltonwalking.co.uk), layered over a solid black background -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\bwoas_crest.png" Color="#000000" />

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BWOAS Route Admin</title>
+<style>
+  :root { --primary: #E0232B; --dark: #1a1a1a; --muted: #6b6b6b; --border: #ddd; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; color: var(--dark); background: #fafafa; }
+  h1 { color: var(--primary); font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+  label { display: block; font-weight: 600; margin-top: 14px; margin-bottom: 4px; font-size: 14px; }
+  input, textarea, select { width: 100%; padding: 9px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: inherit; }
+  textarea { min-height: 60px; resize: vertical; }
+  button { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+  button.secondary { background: white; color: var(--primary); border: 1px solid var(--primary); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .row input { flex: 1; }
+  .row button { margin-top: 0; padding: 6px 10px; }
+  .card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 16px; }
+  #status { margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 14px; display: none; }
+  #status.ok { background: #e6f7e9; color: #1a7a34; display: block; }
+  #status.err { background: #fde8e8; color: #b3261e; display: block; }
+  #app-section { display: none; }
+  .list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<h1>BWOAS Route Admin</h1>
+<div class="subtitle">Add walking routes to the app. Changes appear next time anyone opens the Routes tab.</div>
+
+<div id="login-section" class="card">
+  <label for="email">Email</label>
+  <input type="email" id="email" autocomplete="username">
+  <label for="password">Password</label>
+  <input type="password" id="password" autocomplete="current-password">
+  <button id="login-btn">Sign in</button>
+</div>
+
+<div id="app-section">
+  <div class="card">
+    <label>Route name</label>
+    <input type="text" id="name">
+
+    <label>Latitude / Longitude</label>
+    <div class="row">
+      <input type="text" id="latitude" placeholder="53.6006">
+      <input type="text" id="longitude" placeholder="-2.5495">
+    </div>
+
+    <label>Difficulty</label>
+    <select id="difficulty">
+      <option>Easy</option>
+      <option selected>Moderate</option>
+      <option>Hard</option>
+    </select>
+
+    <label>Difficulty badge</label>
+    <input type="text" id="difficultyBadge" placeholder="e.g. a coloured circle emoji">
+
+    <label>Stats line</label>
+    <input type="text" id="stats" placeholder="7km - 200m ascent - 2 hours">
+
+    <label>Short description (map popup)</label>
+    <textarea id="shortDescription"></textarea>
+
+    <label>Terrain notes</label>
+    <textarea id="terrainNotes"></textarea>
+
+    <label>Venue / starting pub</label>
+    <input type="text" id="venue">
+
+    <label>Address</label>
+    <input type="text" id="address">
+
+    <label>what3words</label>
+    <input type="text" id="what3Words" placeholder="word.word.word">
+
+    <label>Grid reference</label>
+    <input type="text" id="gridReference" placeholder="SD635118">
+
+    <label>Transport notes</label>
+    <textarea id="transportNotes"></textarea>
+
+    <label>Parking notes</label>
+    <textarea id="parkingNotes"></textarea>
+  </div>
+
+  <div class="card">
+    <label>Photo URLs</label>
+    <div class="hint">Full image URLs (e.g. from the club website's photo gallery).</div>
+    <div id="photo-list"></div>
+    <div class="row">
+      <input type="text" id="photo-input" placeholder="https://...">
+      <button type="button" id="add-photo-btn">Add</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Downloadable files (GPX / risk assessment PDF)</label>
+    <div id="file-list"></div>
+    <div class="row">
+      <input type="text" id="file-name-input" placeholder="File name, e.g. my-route.gpx">
+    </div>
+    <div class="row">
+      <input type="text" id="file-url-input" placeholder="File URL">
+    </div>
+    <div class="row">
+      <input type="text" id="file-desc-input" placeholder="Description, e.g. GPX track">
+      <button type="button" id="add-file-btn">Add</button>
+    </div>
+  </div>
+
+  <button id="save-btn">Save route</button>
+  <button class="secondary" id="logout-btn">Sign out</button>
+  <div id="status"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  // Public Firebase web config - not secret, safe to embed (access is governed
+  // by Firestore security rules + Auth, not by hiding this config).
+  firebase.initializeApp({
+    apiKey: "AIzaSyB2XJJ4soD2BH7AoZw-Umb3Fc3pT6GhjX8",
+    projectId: "bwoas-85868"
+  });
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  const loginSection = document.getElementById('login-section');
+  const appSection = document.getElementById('app-section');
+  const statusEl = document.getElementById('status');
+
+  function showStatus(message, isError) {
+    statusEl.textContent = message;
+    statusEl.className = isError ? 'err' : 'ok';
+  }
+
+  auth.onAuthStateChanged(user => {
+    loginSection.style.display = user ? 'none' : 'block';
+    appSection.style.display = user ? 'block' : 'none';
+  });
+
+  document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+    } catch (e) {
+      showStatus('Sign-in failed: ' + e.message, true);
+    }
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+
+  // --- Photo URLs ---
+  const photoUrls = [];
+  const photoList = document.getElementById('photo-list');
+
+  function renderPhotoList() {
+    photoList.innerHTML = '';
+    photoUrls.forEach((url, i) => {
+      const div = document.createElement('div');
+      div.className = 'list-item';
+      div.innerHTML = `<span>${url}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'secondary';
+      removeBtn.textContent = 'Remove';
+      removeBtn.addEventListener('click', () => { photoUrls.splice(i, 1); renderPhotoList(); });
+      div.appendChild(removeBtn);
+      photoList.appendChild(div);
+    });
+  }
+
+  document.getElementById('add-photo-btn').addEventListener('click', () => {
+    const input = document.getElementById('photo-input');
+    if (input.value.trim()) {
+      photoUrls.push(input.value.trim());
+      input.value = '';
+      renderPhotoList();
+    }
+  });
+
+  // --- Files (GPX/PDF) ---
+  const files = [];
+  const fileList = document.getElementById('file-list');
+
+  function renderFileList() {
+    fileList.innerHTML = '';
+    files.forEach((f, i) => {
+      const div = document.createElement('div');
+      div.className = 'list-item';
+      div.innerHTML = `<span><strong>${f.fileName}</strong> - ${f.description}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'secondary';
+      removeBtn.textContent = 'Remove';
+      removeBtn.addEventListener('click', () => { files.splice(i, 1); renderFileList(); });
+      div.appendChild(removeBtn);
+      fileList.appendChild(div);
+    });
+  }
+
+  document.getElementById('add-file-btn').addEventListener('click', () => {
+    const fileName = document.getElementById('file-name-input').value.trim();
+    const url = document.getElementById('file-url-input').value.trim();
+    const description = document.getElementById('file-desc-input').value.trim();
+    if (fileName && url) {
+      files.push({ fileName, url, description });
+      document.getElementById('file-name-input').value = '';
+      document.getElementById('file-url-input').value = '';
+      document.getElementById('file-desc-input').value = '';
+      renderFileList();
+    }
+  });
+
+  // --- Save route ---
+  document.getElementById('save-btn').addEventListener('click', async () => {
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.disabled = true;
+    try {
+      const snapshot = await db.collection('routes').get();
+      let maxId = 0;
+      snapshot.forEach(doc => {
+        const id = parseInt(doc.id, 10);
+        if (!isNaN(id) && id > maxId) maxId = id;
+      });
+      const nextId = String(maxId + 1);
+
+      const route = {
+        name: document.getElementById('name').value,
+        latitude: parseFloat(document.getElementById('latitude').value) || 0,
+        longitude: parseFloat(document.getElementById('longitude').value) || 0,
+        difficulty: document.getElementById('difficulty').value,
+        difficultyBadge: document.getElementById('difficultyBadge').value,
+        stats: document.getElementById('stats').value,
+        shortDescription: document.getElementById('shortDescription').value,
+        terrainNotes: document.getElementById('terrainNotes').value,
+        venue: document.getElementById('venue').value,
+        address: document.getElementById('address').value,
+        what3Words: document.getElementById('what3Words').value,
+        gridReference: document.getElementById('gridReference').value,
+        transportNotes: document.getElementById('transportNotes').value,
+        parkingNotes: document.getElementById('parkingNotes').value,
+        photoUrls: photoUrls,
+        files: files
+      };
+
+      await db.collection('routes').doc(nextId).set(route);
+      showStatus(`Saved as routes/${nextId} - ${route.name}`, false);
+    } catch (e) {
+      showStatus('Failed to save: ' + e.message, true);
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
