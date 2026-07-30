@@ -43,6 +43,14 @@
 
 <div id="app-section">
   <div class="card">
+    <label>Existing routes</label>
+    <div class="hint">Pick a route to edit it, or leave on "New route" to add one.</div>
+    <select id="route-picker">
+      <option value="">-- New route --</option>
+    </select>
+  </div>
+
+  <div class="card">
     <label>Route name</label>
     <input type="text" id="name">
 
@@ -116,6 +124,7 @@
   </div>
 
   <button id="save-btn">Save route</button>
+  <button class="secondary" id="delete-btn" style="display:none;">Delete this route</button>
   <button class="secondary" id="logout-btn">Sign out</button>
   <div id="status"></div>
 </div>
@@ -143,9 +152,98 @@
     statusEl.className = isError ? 'err' : 'ok';
   }
 
+  let editingId = null;
+  const routePicker = document.getElementById('route-picker');
+  const deleteBtn = document.getElementById('delete-btn');
+
   auth.onAuthStateChanged(user => {
     loginSection.style.display = user ? 'none' : 'block';
     appSection.style.display = user ? 'block' : 'none';
+    if (user) loadRouteList();
+  });
+
+  async function loadRouteList() {
+    const snapshot = await db.collection('routes').get();
+    const routes = [];
+    snapshot.forEach(doc => routes.push({ id: doc.id, name: doc.data().name || '(unnamed)' }));
+    routes.sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
+
+    routePicker.innerHTML = '<option value="">-- New route --</option>';
+    routes.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.id;
+      opt.textContent = `${r.id}. ${r.name}`;
+      routePicker.appendChild(opt);
+    });
+  }
+
+  routePicker.addEventListener('change', async () => {
+    const id = routePicker.value;
+    if (!id) {
+      clearForm();
+      return;
+    }
+    const doc = await db.collection('routes').doc(id).get();
+    if (!doc.exists) { showStatus('Route not found - it may have been deleted.', true); return; }
+    loadFormFromRoute(id, doc.data());
+  });
+
+  function clearForm() {
+    editingId = null;
+    routePicker.value = '';
+    deleteBtn.style.display = 'none';
+    ['name','latitude','longitude','difficultyBadge','stats','shortDescription','terrainNotes',
+     'venue','address','what3Words','gridReference','transportNotes','parkingNotes']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('difficulty').value = 'Moderate';
+    photoUrls.length = 0;
+    files.length = 0;
+    renderPhotoList();
+    renderFileList();
+    showStatus('', false);
+    statusEl.style.display = 'none';
+  }
+
+  function loadFormFromRoute(id, route) {
+    editingId = id;
+    deleteBtn.style.display = 'inline-block';
+    document.getElementById('name').value = route.name || '';
+    document.getElementById('latitude').value = route.latitude ?? '';
+    document.getElementById('longitude').value = route.longitude ?? '';
+    document.getElementById('difficulty').value = route.difficulty || 'Moderate';
+    document.getElementById('difficultyBadge').value = route.difficultyBadge || '';
+    document.getElementById('stats').value = route.stats || '';
+    document.getElementById('shortDescription').value = route.shortDescription || '';
+    document.getElementById('terrainNotes').value = route.terrainNotes || '';
+    document.getElementById('venue').value = route.venue || '';
+    document.getElementById('address').value = route.address || '';
+    document.getElementById('what3Words').value = route.what3Words || '';
+    document.getElementById('gridReference').value = route.gridReference || '';
+    document.getElementById('transportNotes').value = route.transportNotes || '';
+    document.getElementById('parkingNotes').value = route.parkingNotes || '';
+
+    photoUrls.length = 0;
+    (route.photoUrls || []).forEach(u => photoUrls.push(u));
+    renderPhotoList();
+
+    files.length = 0;
+    (route.files || []).forEach(f => files.push(f));
+    renderFileList();
+
+    showStatus(`Editing routes/${id}`, false);
+  }
+
+  deleteBtn.addEventListener('click', async () => {
+    if (!editingId) return;
+    if (!confirm(`Delete route ${editingId} - "${document.getElementById('name').value}"? This can't be undone.`)) return;
+    try {
+      await db.collection('routes').doc(editingId).delete();
+      showStatus(`Deleted routes/${editingId}`, false);
+      clearForm();
+      loadRouteList();
+    } catch (e) {
+      showStatus('Failed to delete: ' + e.message, true);
+    }
   });
 
   document.getElementById('login-btn').addEventListener('click', async () => {
@@ -225,20 +323,34 @@
   // --- Save route ---
   document.getElementById('save-btn').addEventListener('click', async () => {
     const saveBtn = document.getElementById('save-btn');
+
+    const name = document.getElementById('name').value.trim();
+    const latitude = parseFloat(document.getElementById('latitude').value);
+    const longitude = parseFloat(document.getElementById('longitude').value);
+
+    if (!name) { showStatus('Route name is required.', true); return; }
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || (latitude === 0 && longitude === 0)) {
+      showStatus('Latitude and longitude are required and must be real coordinates (not 0,0) - the route\'s pin will be placed there on the map.', true);
+      return;
+    }
+
     saveBtn.disabled = true;
     try {
-      const snapshot = await db.collection('routes').get();
-      let maxId = 0;
-      snapshot.forEach(doc => {
-        const id = parseInt(doc.id, 10);
-        if (!isNaN(id) && id > maxId) maxId = id;
-      });
-      const nextId = String(maxId + 1);
+      let id = editingId;
+      if (!id) {
+        const snapshot = await db.collection('routes').get();
+        let maxId = 0;
+        snapshot.forEach(doc => {
+          const existingId = parseInt(doc.id, 10);
+          if (!isNaN(existingId) && existingId > maxId) maxId = existingId;
+        });
+        id = String(maxId + 1);
+      }
 
       const route = {
-        name: document.getElementById('name').value,
-        latitude: parseFloat(document.getElementById('latitude').value) || 0,
-        longitude: parseFloat(document.getElementById('longitude').value) || 0,
+        name: name,
+        latitude: latitude,
+        longitude: longitude,
         difficulty: document.getElementById('difficulty').value,
         difficultyBadge: document.getElementById('difficultyBadge').value,
         stats: document.getElementById('stats').value,
@@ -254,8 +366,12 @@
         files: files
       };
 
-      await db.collection('routes').doc(nextId).set(route);
-      showStatus(`Saved as routes/${nextId} - ${route.name}`, false);
+      await db.collection('routes').doc(id).set(route);
+      showStatus(`Saved as routes/${id} - ${route.name}`, false);
+      editingId = id;
+      deleteBtn.style.display = 'inline-block';
+      await loadRouteList();
+      routePicker.value = id;
     } catch (e) {
       showStatus('Failed to save: ' + e.message, true);
     } finally {
