@@ -23,6 +23,16 @@ public class IntToBoolConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
+/// <summary>True if the bound int is zero - used to show an empty-state message.</summary>
+public class IntToInverseBoolConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is int i && i == 0;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
 /// <summary>Maps a route's difficulty tier to a badge colour - green/orange/red, matching the map pins.</summary>
 public class DifficultyToColorConverter : IValueConverter
 {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BWOAS Route Admin</title>
+<title>BWOAS Admin</title>
 <style>
   :root { --primary: #E0232B; --dark: #1a1a1a; --muted: #6b6b6b; --border: #ddd; }
   * { box-sizing: border-box; }
@@ -26,12 +26,15 @@
   #app-section { display: none; }
   .list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
   .hint { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 8px; }
+  .tabs button { margin-top: 0; flex: 1; background: white; color: var(--primary); border: 1px solid var(--primary); }
+  .tabs button.active { background: var(--primary); color: white; }
 </style>
 </head>
 <body>
 
-<h1>BWOAS Route Admin</h1>
-<div class="subtitle">Add walking routes to the app. Changes appear next time anyone opens the Routes tab.</div>
+<h1>BWOAS Admin</h1>
+<div class="subtitle">Manage routes and scheduled walks. Changes appear next time anyone opens the app.</div>
 
 <div id="login-section" class="card">
   <label for="email">Email</label>
@@ -42,6 +45,13 @@
 </div>
 
 <div id="app-section">
+
+  <div class="tabs">
+    <button type="button" id="tab-routes-btn" class="active">Routes</button>
+    <button type="button" id="tab-events-btn">Events</button>
+  </div>
+
+  <div id="routes-tab">
   <div class="card">
     <label>Existing routes</label>
     <div class="hint">Pick a route to edit it, or leave on "New route" to add one.</div>
@@ -125,6 +135,38 @@
 
   <button id="save-btn">Save route</button>
   <button class="secondary" id="delete-btn" style="display:none;">Delete this route</button>
+  </div>
+
+  <div id="events-tab" style="display:none;">
+    <div class="card">
+      <label>Existing events</label>
+      <div class="hint">Pick an event to edit it, or leave on "New event" to add one.</div>
+      <select id="event-picker">
+        <option value="">-- New event --</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <label>Route</label>
+      <select id="event-route"></select>
+
+      <label>Date</label>
+      <input type="date" id="event-date">
+
+      <label>Start time / End time</label>
+      <div class="row">
+        <input type="time" id="event-start-time">
+        <input type="time" id="event-end-time">
+      </div>
+
+      <label>Ticket Tailor link</label>
+      <input type="text" id="event-ticket-link" placeholder="https://www.tickettailor.com/events/...">
+    </div>
+
+    <button id="save-event-btn">Save event</button>
+    <button class="secondary" id="delete-event-btn" style="display:none;">Delete this event</button>
+  </div>
+
   <button class="secondary" id="logout-btn">Sign out</button>
   <div id="status"></div>
 </div>
@@ -159,7 +201,31 @@
   auth.onAuthStateChanged(user => {
     loginSection.style.display = user ? 'none' : 'block';
     appSection.style.display = user ? 'block' : 'none';
-    if (user) loadRouteList();
+    if (user) {
+      loadRouteList();
+      loadEventRouteDropdown();
+      loadEventList();
+    }
+  });
+
+  // --- Tabs ---
+  const routesTab = document.getElementById('routes-tab');
+  const eventsTab = document.getElementById('events-tab');
+  const tabRoutesBtn = document.getElementById('tab-routes-btn');
+  const tabEventsBtn = document.getElementById('tab-events-btn');
+
+  tabRoutesBtn.addEventListener('click', () => {
+    routesTab.style.display = 'block';
+    eventsTab.style.display = 'none';
+    tabRoutesBtn.classList.add('active');
+    tabEventsBtn.classList.remove('active');
+  });
+
+  tabEventsBtn.addEventListener('click', () => {
+    routesTab.style.display = 'none';
+    eventsTab.style.display = 'block';
+    tabEventsBtn.classList.add('active');
+    tabRoutesBtn.classList.remove('active');
   });
 
   async function loadRouteList() {
@@ -372,6 +438,150 @@
       deleteBtn.style.display = 'inline-block';
       await loadRouteList();
       routePicker.value = id;
+    } catch (e) {
+      showStatus('Failed to save: ' + e.message, true);
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+
+  // --- Events ---
+  let editingEventId = null;
+  const eventPicker = document.getElementById('event-picker');
+  const eventRouteSelect = document.getElementById('event-route');
+  const deleteEventBtn = document.getElementById('delete-event-btn');
+
+  async function loadEventRouteDropdown() {
+    const snapshot = await db.collection('routes').get();
+    const routes = [];
+    snapshot.forEach(doc => routes.push({ id: doc.id, name: doc.data().name || '(unnamed)' }));
+    routes.sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
+
+    eventRouteSelect.innerHTML = '';
+    routes.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.id;
+      opt.textContent = `${r.id}. ${r.name}`;
+      eventRouteSelect.appendChild(opt);
+    });
+  }
+
+  async function loadEventList() {
+    const [eventsSnapshot, routesSnapshot] = await Promise.all([
+      db.collection('events').get(),
+      db.collection('routes').get()
+    ]);
+    const routeNames = {};
+    routesSnapshot.forEach(doc => { routeNames[doc.id] = doc.data().name || '(unnamed)'; });
+
+    const events = [];
+    eventsSnapshot.forEach(doc => {
+      const data = doc.data();
+      const routeName = routeNames[String(data.routeId)] || `route ${data.routeId} (missing)`;
+      events.push({ id: doc.id, label: `${data.startDateTime || '?'} - ${routeName}` });
+    });
+    events.sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
+
+    eventPicker.innerHTML = '<option value="">-- New event --</option>';
+    events.forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.id;
+      opt.textContent = e.label;
+      eventPicker.appendChild(opt);
+    });
+  }
+
+  eventPicker.addEventListener('change', async () => {
+    const id = eventPicker.value;
+    if (!id) { clearEventForm(); return; }
+    const doc = await db.collection('events').doc(id).get();
+    if (!doc.exists) { showStatus('Event not found - it may have been deleted.', true); return; }
+    loadFormFromEvent(id, doc.data());
+  });
+
+  function clearEventForm() {
+    editingEventId = null;
+    eventPicker.value = '';
+    deleteEventBtn.style.display = 'none';
+    document.getElementById('event-date').value = '';
+    document.getElementById('event-start-time').value = '';
+    document.getElementById('event-end-time').value = '';
+    document.getElementById('event-ticket-link').value = '';
+    showStatus('', false);
+    statusEl.style.display = 'none';
+  }
+
+  function toDateInputValue(isoString) {
+    return (isoString || '').slice(0, 10);
+  }
+  function toTimeInputValue(isoString) {
+    return (isoString || '').slice(11, 16);
+  }
+
+  function loadFormFromEvent(id, ev) {
+    editingEventId = id;
+    deleteEventBtn.style.display = 'inline-block';
+    eventRouteSelect.value = String(ev.routeId);
+    document.getElementById('event-date').value = toDateInputValue(ev.startDateTime);
+    document.getElementById('event-start-time').value = toTimeInputValue(ev.startDateTime);
+    document.getElementById('event-end-time').value = toTimeInputValue(ev.endDateTime);
+    document.getElementById('event-ticket-link').value = ev.ticketLink || '';
+    showStatus(`Editing events/${id}`, false);
+  }
+
+  deleteEventBtn.addEventListener('click', async () => {
+    if (!editingEventId) return;
+    if (!confirm(`Delete this event? This can't be undone.`)) return;
+    try {
+      await db.collection('events').doc(editingEventId).delete();
+      showStatus(`Deleted events/${editingEventId}`, false);
+      clearEventForm();
+      loadEventList();
+    } catch (e) {
+      showStatus('Failed to delete: ' + e.message, true);
+    }
+  });
+
+  document.getElementById('save-event-btn').addEventListener('click', async () => {
+    const saveBtn = document.getElementById('save-event-btn');
+
+    const routeId = parseInt(eventRouteSelect.value, 10);
+    const date = document.getElementById('event-date').value;
+    const startTime = document.getElementById('event-start-time').value;
+    const endTime = document.getElementById('event-end-time').value;
+    const ticketLink = document.getElementById('event-ticket-link').value.trim();
+
+    if (!date || !startTime || !endTime) { showStatus('Date, start time and end time are all required.', true); return; }
+    if (endTime <= startTime) { showStatus('End time must be after start time.', true); return; }
+    if (!ticketLink) { showStatus('Ticket Tailor link is required.', true); return; }
+    if (!Number.isFinite(routeId)) { showStatus('Pick a route.', true); return; }
+
+    saveBtn.disabled = true;
+    try {
+      let id = editingEventId;
+      if (!id) {
+        const snapshot = await db.collection('events').get();
+        let maxId = 0;
+        snapshot.forEach(doc => {
+          const existingId = parseInt(doc.id, 10);
+          if (!isNaN(existingId) && existingId > maxId) maxId = existingId;
+        });
+        id = String(maxId + 1);
+      }
+
+      const ev = {
+        routeId: routeId,
+        startDateTime: `${date}T${startTime}:00`,
+        endDateTime: `${date}T${endTime}:00`,
+        ticketLink: ticketLink
+      };
+
+      await db.collection('events').doc(id).set(ev);
+      showStatus(`Saved as events/${id}`, false);
+      editingEventId = id;
+      deleteEventBtn.style.display = 'inline-block';
+      await loadEventList();
+      eventPicker.value = id;
     } catch (e) {
       showStatus('Failed to save: ' + e.message, true);
     } finally {

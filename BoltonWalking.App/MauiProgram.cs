@@ -44,6 +44,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<HttpClient>();
         builder.Services.AddSingleton<FirestoreClient>();
         builder.Services.AddSingleton<IRoutesService, RoutesService>();
+        builder.Services.AddSingleton<IEventsService, EventsService>();
 
         builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
         builder.Services.AddSingleton<IFileDownloadService, FileDownloadService>();
@@ -51,12 +52,14 @@ public static class MauiProgram
         builder.Services.AddTransient<RoutesViewModel>();
         builder.Services.AddTransient<RouteDetailsViewModel>();
         builder.Services.AddTransient<CommitteeViewModel>();
+        builder.Services.AddTransient<EventsViewModel>();
 
         builder.Services.AddTransient<AboutPage>();
         builder.Services.AddTransient<BookPage>();
         builder.Services.AddTransient<RoutesPage>();
         builder.Services.AddTransient<RouteDetailsPage>();
         builder.Services.AddTransient<CommitteePage>();
+        builder.Services.AddTransient<EventsPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
