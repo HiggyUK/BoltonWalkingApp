@@ -32,15 +32,14 @@ public partial class EventsViewModel : ObservableObject
         {
             IsBusy = true;
             ErrorMessage = null;
-            Events.Clear();
-
             var items = await eventsService.GetUpcomingEventsAsync();
+            Events.Clear();
             foreach (var item in items)
                 Events.Add(item);
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Couldn't load events: {ex.Message}";
+            ErrorMessage = $"Couldn't reach the server - showing the last events loaded. ({ex.Message})";
         }
         finally
         {

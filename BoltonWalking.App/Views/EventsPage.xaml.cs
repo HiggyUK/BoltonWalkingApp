@@ -17,7 +17,7 @@ public partial class EventsPage : ContentPage
     {
         base.OnAppearing();
 
-        if (viewModel.Events.Count == 0)
-            await viewModel.LoadEventsCommand.ExecuteAsync(null);
+        // Always re-check for updates, same as Routes - not just on first visit.
+        await viewModel.LoadEventsCommand.ExecuteAsync(null);
     }
 }

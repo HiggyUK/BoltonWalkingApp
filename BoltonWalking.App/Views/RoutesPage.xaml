@@ -3,9 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
              xmlns:vm="clr-namespace:BoltonWalking.App.ViewModels"
+             xmlns:converters="clr-namespace:BoltonWalking.App.Converters"
              x:DataType="vm:RoutesViewModel"
              x:Class="BoltonWalking.App.Views.RoutesPage"
              Title="Routes">
+
+    <ContentPage.Resources>
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Refresh" Command="{Binding LoadRoutesCommand}" />
+    </ContentPage.ToolbarItems>
 
     <Grid>
 
@@ -18,6 +27,16 @@
                             VerticalOptions="Start"
                             Margin="0,16"
                             Color="{DynamicResource Primary}" />
+
+        <Border IsVisible="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}"
+                VerticalOptions="Start"
+                Margin="16"
+                Padding="12"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 8"
+                BackgroundColor="{DynamicResource Primary}">
+            <Label Text="{Binding ErrorMessage}" TextColor="White" FontSize="13" />
+        </Border>
 
         <!--
             Custom brief-info popup, shown over the map when a pin is tapped.

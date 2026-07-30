@@ -9,6 +9,10 @@
              x:Name="PageRoot"
              Title="Events">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Refresh" Command="{Binding LoadEventsCommand}" />
+    </ContentPage.ToolbarItems>
+
     <ContentPage.Resources>
         <converters:IntToBoolConverter x:Key="IntToBoolConverter" />
         <converters:IntToInverseBoolConverter x:Key="IntToInverseBoolConverter" />

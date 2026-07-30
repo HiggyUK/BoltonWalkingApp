@@ -15,6 +15,9 @@ public partial class RoutesViewModel : ObservableObject
     [ObservableProperty]
     private bool isBusy;
 
+    [ObservableProperty]
+    private string? errorMessage;
+
     // The route currently shown in the brief-info popup, or null if none is shown.
     [ObservableProperty]
     private WalkingRoute? selectedRoute;
@@ -36,11 +39,15 @@ public partial class RoutesViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            Routes.Clear();
-
+            ErrorMessage = null;
             var items = await routesService.GetRoutesAsync();
+            Routes.Clear();
             foreach (var item in items)
                 Routes.Add(item);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Couldn't reach the server - showing the last routes loaded. ({ex.Message})";
         }
         finally
         {

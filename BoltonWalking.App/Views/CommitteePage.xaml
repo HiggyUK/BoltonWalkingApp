@@ -28,6 +28,11 @@
                                 IsVisible="{Binding IsBusy}"
                                 Color="{DynamicResource Primary}" />
 
+            <Label Text="{Binding ErrorMessage}"
+                   FontSize="14"
+                   TextColor="{DynamicResource Primary}"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}" />
+
             <CollectionView ItemsSource="{Binding Members}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:CommitteeMember">

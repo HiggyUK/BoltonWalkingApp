@@ -20,6 +20,9 @@ public partial class CommitteeViewModel : ObservableObject
     [ObservableProperty]
     private bool isBusy;
 
+    [ObservableProperty]
+    private string? errorMessage;
+
     public CommitteeViewModel(FirestoreClient firestoreClient)
     {
         this.firestoreClient = firestoreClient;
@@ -33,7 +36,7 @@ public partial class CommitteeViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            Members.Clear();
+            ErrorMessage = null;
 
             var documents = await firestoreClient.GetCollectionAsync("committeeMembers");
             var members = documents.Select(d => new CommitteeMember
@@ -46,8 +49,13 @@ public partial class CommitteeViewModel : ObservableObject
                 PhotoUrl = FirestoreClient.GetNullableString(d.Fields, "photoUrl")
             }).OrderBy(m => m.Id);
 
+            Members.Clear();
             foreach (var member in members)
                 Members.Add(member);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Couldn't reach the server - showing the last committee list loaded. ({ex.Message})";
         }
         finally
         {
