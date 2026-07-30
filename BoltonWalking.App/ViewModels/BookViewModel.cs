@@ -6,7 +6,7 @@ using BoltonWalking.App.Services;
 
 namespace BoltonWalking.App.ViewModels;
 
-public partial class EventsViewModel : ObservableObject
+public partial class BookViewModel : ObservableObject
 {
     private readonly IEventsService eventsService;
 
@@ -18,7 +18,7 @@ public partial class EventsViewModel : ObservableObject
     [ObservableProperty]
     private string? errorMessage;
 
-    public EventsViewModel(IEventsService eventsService)
+    public BookViewModel(IEventsService eventsService)
     {
         this.eventsService = eventsService;
     }
@@ -39,7 +39,7 @@ public partial class EventsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Couldn't reach the server - showing the last events loaded. ({ex.Message})";
+            ErrorMessage = $"Couldn't reach the server - showing the last walks loaded. ({ex.Message})";
         }
         finally
         {
@@ -50,9 +50,17 @@ public partial class EventsViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenTicketLinkAsync(EventItem? eventItem)
     {
-        if (eventItem is null || string.IsNullOrWhiteSpace(eventItem.TicketLink))
+        // The button is disabled until IsBookable, but guard here too in case
+        // it's ever reachable another way.
+        if (eventItem is null || !eventItem.IsBookable || string.IsNullOrWhiteSpace(eventItem.TicketLink))
             return;
 
         await Launcher.OpenAsync(eventItem.TicketLink);
+    }
+
+    [RelayCommand]
+    private async Task OpenBookingPageAsync()
+    {
+        await Launcher.OpenAsync(ClubInfo.BookingUrl);
     }
 }

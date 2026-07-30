@@ -1,14 +1,23 @@
+using BoltonWalking.App.ViewModels;
+
 namespace BoltonWalking.App.Views;
 
 public partial class BookPage : ContentPage
 {
-    public BookPage()
+    private readonly BookViewModel viewModel;
+
+    public BookPage(BookViewModel viewModel)
     {
         InitializeComponent();
+        this.viewModel = viewModel;
+        BindingContext = viewModel;
     }
 
-    private async void OnOpenBookingPageClicked(object? sender, EventArgs e)
+    protected override async void OnAppearing()
     {
-        await Launcher.Default.OpenAsync(ClubInfo.BookingUrl);
+        base.OnAppearing();
+
+        // Always re-check for updates, same as Routes.
+        await viewModel.LoadEventsCommand.ExecuteAsync(null);
     }
 }

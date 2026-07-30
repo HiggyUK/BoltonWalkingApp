@@ -9,10 +9,6 @@
                       Icon="icon_about.svg"
                       ContentTemplate="{DataTemplate views:AboutPage}"
                       Route="AboutPage" />
-        <ShellContent Title="Events"
-                      Icon="icon_events.svg"
-                      ContentTemplate="{DataTemplate views:EventsPage}"
-                      Route="EventsPage" />
         <ShellContent Title="Book"
                       Icon="icon_book.svg"
                       ContentTemplate="{DataTemplate views:BookPage}"

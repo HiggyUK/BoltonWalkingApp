@@ -40,6 +40,9 @@ public class EventsService : IEventsService
             StartDateTime = DateTime.TryParse(FirestoreClient.GetString(fields, "startDateTime"), out var start) ? start : DateTime.MinValue,
             EndDateTime = DateTime.TryParse(FirestoreClient.GetString(fields, "endDateTime"), out var end) ? end : DateTime.MinValue,
             TicketLink = FirestoreClient.GetString(fields, "ticketLink"),
+            // Missing/unparseable = always bookable, rather than locking out
+            // events created before this field existed.
+            BookingOpensAt = DateTime.TryParse(FirestoreClient.GetString(fields, "bookingOpensAt"), out var opens) ? opens : DateTime.MinValue,
             Route = route
         };
     }

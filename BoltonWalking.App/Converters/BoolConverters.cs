@@ -23,6 +23,16 @@ public class IntToBoolConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
+/// <summary>Inverts a bool - used to show the opposite state's UI (e.g. a disabled "not yet bookable" button).</summary>
+public class InvertedBoolConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is bool b && !b;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is bool b && !b;
+}
+
 /// <summary>True if the bound int is zero - used to show an empty-state message.</summary>
 public class IntToInverseBoolConverter : IValueConverter
 {

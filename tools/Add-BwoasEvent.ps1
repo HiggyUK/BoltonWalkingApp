@@ -40,6 +40,17 @@ function Get-IdToken {
 function ConvertTo-FirestoreString($value) { @{ stringValue = "$value" } }
 function ConvertTo-FirestoreNumber($value) { @{ doubleValue = [double]$value } }
 
+# Club policy: Monday walks open for booking the prior Thursday at 18:00;
+# Wednesday walks open the prior Sunday at 18:00. Other days have no
+# standard rule, so this returns $null and the admin enters one manually.
+function Get-SuggestedBookingOpensAt([datetime]$walkDate) {
+    switch ($walkDate.DayOfWeek) {
+        'Monday' { return $walkDate.Date.AddDays(-4).AddHours(18) }
+        'Wednesday' { return $walkDate.Date.AddDays(-3).AddHours(18) }
+        default { return $null }
+    }
+}
+
 function Get-NextDocumentId {
     param($Headers, $Collection)
     $existing = Invoke-RestMethod -Uri "$BaseUrl/$Collection" -Headers $Headers
@@ -97,14 +108,32 @@ if (-not [datetime]::TryParse("$date $endTime", [ref]$endDateTime)) {
     exit 1
 }
 
+$suggested = Get-SuggestedBookingOpensAt -walkDate $startDateTime
+if ($suggested) {
+    Write-Host "`n$($startDateTime.DayOfWeek) walk - booking normally opens $($suggested.ToString('ddd d MMM, HH:mm'))." -ForegroundColor Cyan
+    $bookingOpensInput = Read-Host "Booking opens at (YYYY-MM-DD HH:mm) [Enter to accept the above]"
+} else {
+    Write-Host "`n$($startDateTime.DayOfWeek) doesn't have a standard booking-opens rule - enter one manually." -ForegroundColor Yellow
+    $bookingOpensInput = Read-Host "Booking opens at (YYYY-MM-DD HH:mm, blank = bookable immediately)"
+}
+
+$bookingOpensAt = $null
+if ([string]::IsNullOrWhiteSpace($bookingOpensInput)) {
+    $bookingOpensAt = if ($suggested) { $suggested } else { [datetime]::MinValue }
+} elseif (-not [datetime]::TryParse($bookingOpensInput, [ref]$bookingOpensAt)) {
+    Write-Error "Could not parse booking-opens date/time."
+    exit 1
+}
+
 $nextId = Get-NextDocumentId -Headers $headers -Collection "events"
 Write-Host "`nThis will be saved as events/$nextId" -ForegroundColor Yellow
 
 $fields = @{
-    routeId       = ConvertTo-FirestoreNumber $routeId
-    startDateTime = ConvertTo-FirestoreString $startDateTime.ToString("yyyy-MM-ddTHH:mm:ss")
-    endDateTime   = ConvertTo-FirestoreString $endDateTime.ToString("yyyy-MM-ddTHH:mm:ss")
-    ticketLink    = ConvertTo-FirestoreString $ticketLink
+    routeId        = ConvertTo-FirestoreNumber $routeId
+    startDateTime  = ConvertTo-FirestoreString $startDateTime.ToString("yyyy-MM-ddTHH:mm:ss")
+    endDateTime    = ConvertTo-FirestoreString $endDateTime.ToString("yyyy-MM-ddTHH:mm:ss")
+    ticketLink     = ConvertTo-FirestoreString $ticketLink
+    bookingOpensAt = ConvertTo-FirestoreString $bookingOpensAt.ToString("yyyy-MM-ddTHH:mm:ss")
 }
 
 $body = @{ fields = $fields } | ConvertTo-Json -Depth 10
@@ -113,7 +142,8 @@ Write-Host "`nSaving..." -ForegroundColor Cyan
 try {
     Invoke-RestMethod -Uri "$BaseUrl/events`?documentId=$nextId" -Method Post -Headers $headers -Body $body -ContentType "application/json" | Out-Null
     $routeName = ($routes | Where-Object { $_.Id -eq $routeId }).Name
-    Write-Host "Saved: events/$nextId - $routeName on $($startDateTime.ToString('ddd d MMM')), $($startDateTime.ToString('HH:mm'))-$($endDateTime.ToString('HH:mm'))" -ForegroundColor Green
+    $bookingNote = if ($bookingOpensAt -eq [datetime]::MinValue) { "bookable immediately" } else { "booking opens $($bookingOpensAt.ToString('ddd d MMM, HH:mm'))" }
+    Write-Host "Saved: events/$nextId - $routeName on $($startDateTime.ToString('ddd d MMM')), $($startDateTime.ToString('HH:mm'))-$($endDateTime.ToString('HH:mm')) - $bookingNote" -ForegroundColor Green
 }
 catch {
     Write-Error "Failed to save event: $($_.Exception.Message)"

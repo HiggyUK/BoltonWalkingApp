@@ -161,6 +161,13 @@
 
       <label>Ticket Tailor link</label>
       <input type="text" id="event-ticket-link" placeholder="https://www.tickettailor.com/events/...">
+
+      <label>Booking opens</label>
+      <div class="hint" id="booking-opens-hint">Monday walks: prior Thursday 18:00 &#8226; Wednesday walks: prior Sunday 18:00. Auto-filled below - edit if needed, or clear to make it bookable immediately.</div>
+      <div class="row">
+        <input type="date" id="event-booking-date">
+        <input type="time" id="event-booking-time">
+      </div>
     </div>
 
     <button id="save-event-btn">Save event</button>
@@ -507,9 +514,38 @@
     document.getElementById('event-start-time').value = '';
     document.getElementById('event-end-time').value = '';
     document.getElementById('event-ticket-link').value = '';
+    document.getElementById('event-booking-date').value = '';
+    document.getElementById('event-booking-time').value = '';
     showStatus('', false);
     statusEl.style.display = 'none';
   }
+
+  // Club policy: Monday walks open the prior Thursday at 18:00; Wednesday
+  // walks open the prior Sunday at 18:00. Other days have no standard rule.
+  function suggestedBookingOpensAt(dateStr) {
+    if (!dateStr) return null;
+    const walkDate = new Date(dateStr + 'T00:00:00');
+    const day = walkDate.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed...
+    let offsetDays = null;
+    if (day === 1) offsetDays = -4;      // Monday -> prior Thursday
+    else if (day === 3) offsetDays = -3; // Wednesday -> prior Sunday
+    if (offsetDays === null) return null;
+
+    const opens = new Date(walkDate);
+    opens.setDate(opens.getDate() + offsetDays);
+    const yyyy = opens.getFullYear();
+    const mm = String(opens.getMonth() + 1).padStart(2, '0');
+    const dd = String(opens.getDate()).padStart(2, '0');
+    return { date: `${yyyy}-${mm}-${dd}`, time: '18:00' };
+  }
+
+  document.getElementById('event-date').addEventListener('change', () => {
+    const suggestion = suggestedBookingOpensAt(document.getElementById('event-date').value);
+    if (suggestion) {
+      document.getElementById('event-booking-date').value = suggestion.date;
+      document.getElementById('event-booking-time').value = suggestion.time;
+    }
+  });
 
   function toDateInputValue(isoString) {
     return (isoString || '').slice(0, 10);
@@ -526,6 +562,10 @@
     document.getElementById('event-start-time').value = toTimeInputValue(ev.startDateTime);
     document.getElementById('event-end-time').value = toTimeInputValue(ev.endDateTime);
     document.getElementById('event-ticket-link').value = ev.ticketLink || '';
+    // A missing/epoch bookingOpensAt means "bookable immediately" - leave the fields blank for that.
+    const opensIsSet = ev.bookingOpensAt && !ev.bookingOpensAt.startsWith('0001-01-01');
+    document.getElementById('event-booking-date').value = opensIsSet ? toDateInputValue(ev.bookingOpensAt) : '';
+    document.getElementById('event-booking-time').value = opensIsSet ? toTimeInputValue(ev.bookingOpensAt) : '';
     showStatus(`Editing events/${id}`, false);
   }
 
@@ -550,11 +590,17 @@
     const startTime = document.getElementById('event-start-time').value;
     const endTime = document.getElementById('event-end-time').value;
     const ticketLink = document.getElementById('event-ticket-link').value.trim();
+    const bookingDate = document.getElementById('event-booking-date').value;
+    const bookingTime = document.getElementById('event-booking-time').value;
 
     if (!date || !startTime || !endTime) { showStatus('Date, start time and end time are all required.', true); return; }
     if (endTime <= startTime) { showStatus('End time must be after start time.', true); return; }
     if (!ticketLink) { showStatus('Ticket Tailor link is required.', true); return; }
     if (!Number.isFinite(routeId)) { showStatus('Pick a route.', true); return; }
+    if ((bookingDate && !bookingTime) || (!bookingDate && bookingTime)) {
+      showStatus('Set both the booking-opens date and time, or leave both blank.', true);
+      return;
+    }
 
     saveBtn.disabled = true;
     try {
@@ -573,7 +619,9 @@
         routeId: routeId,
         startDateTime: `${date}T${startTime}:00`,
         endDateTime: `${date}T${endTime}:00`,
-        ticketLink: ticketLink
+        ticketLink: ticketLink,
+        // Blank = bookable immediately, encoded as the .NET DateTime.MinValue sentinel.
+        bookingOpensAt: bookingDate ? `${bookingDate}T${bookingTime}:00` : '0001-01-01T00:00:00'
       };
 
       await db.collection('events').doc(id).set(ev);
