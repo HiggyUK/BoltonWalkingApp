@@ -12,8 +12,8 @@
     <ApplicationTitle>Bolton Walking and Outdoors Appreciation Society</ApplicationTitle>
     <!-- Placeholder - replace with your real registered package/bundle id before publishing -->
     <ApplicationId>com.boltonwalking.app</ApplicationId>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.1</ApplicationDisplayVersion>
+    <ApplicationVersion>2</ApplicationVersion>
   </PropertyGroup>
 
   <!-- Release-signing for Play Store uploads. Keystore path/passwords come from
