@@ -1,0 +1,97 @@
+name: iOS App Store Screenshots
+
+# Manual trigger only - captures screenshots on the iOS Simulator at Apple's
+# required App Store sizes (6.9" iPhone and 13" iPad, since this app supports
+# both device families). Downloads as a workflow artifact for manual upload
+# in App Store Connect.
+on:
+  workflow_dispatch:
+
+env:
+  PROJECT_PATH: BoltonWalking.App/BoltonWalking.App.csproj
+  BUNDLE_ID: com.boltonwalking.app
+
+jobs:
+  capture-screenshots:
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.6'
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore MAUI/iOS workloads
+        run: dotnet workload restore ${{ env.PROJECT_PATH }}
+
+      - name: Build for iOS Simulator
+        run: |
+          dotnet build "${{ env.PROJECT_PATH }}" \
+            -f net10.0-ios -c Release \
+            -p:RuntimeIdentifier=iossimulator-arm64
+
+      - name: Locate .app bundle
+        id: locate_app
+        run: |
+          APP_PATH=$(find BoltonWalking.App/bin/Release/net10.0-ios -maxdepth 2 -name "*.app" -type d | head -1)
+          echo "App at: $APP_PATH"
+          echo "app_path=$APP_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Find newest iPhone Pro Max and iPad Pro 13-inch device types
+        id: device_types
+        run: |
+          IPHONE_TYPE=$(xcrun simctl list devicetypes -j | \
+            python3 -c "import json,sys; d=json.load(sys.stdin)['devicetypes']; names=[x['identifier'] for x in d if 'iPhone' in x['name'] and 'Pro-Max' in x['identifier']]; print(sorted(names)[-1])" 2>/dev/null || true)
+          IPAD_TYPE=$(xcrun simctl list devicetypes -j | \
+            python3 -c "import json,sys; d=json.load(sys.stdin)['devicetypes']; names=[x['identifier'] for x in d if 'iPad-Pro' in x['identifier'] and '13' in x['identifier']]; print(sorted(names)[-1])" 2>/dev/null || true)
+          echo "iPhone device type: $IPHONE_TYPE"
+          echo "iPad device type: $IPAD_TYPE"
+          echo "iphone_type=$IPHONE_TYPE" >> "$GITHUB_OUTPUT"
+          echo "ipad_type=$IPAD_TYPE" >> "$GITHUB_OUTPUT"
+
+      - name: Find newest iOS runtime
+        id: runtime
+        run: |
+          RUNTIME=$(xcrun simctl list runtimes -j | \
+            python3 -c "import json,sys; d=json.load(sys.stdin)['runtimes']; ios=[x['identifier'] for x in d if x['name'].startswith('iOS')]; print(sorted(ios)[-1])")
+          echo "Runtime: $RUNTIME"
+          echo "runtime=$RUNTIME" >> "$GITHUB_OUTPUT"
+
+      - name: Capture screenshot on a simulator
+        env:
+          APP_PATH: ${{ steps.locate_app.outputs.app_path }}
+          RUNTIME: ${{ steps.runtime.outputs.runtime }}
+        run: |
+          mkdir -p screenshots
+          for PAIR in "iphone:${{ steps.device_types.outputs.iphone_type }}" "ipad:${{ steps.device_types.outputs.ipad_type }}"; do
+            LABEL="${PAIR%%:*}"
+            DEVICE_TYPE="${PAIR#*:}"
+            if [ -z "$DEVICE_TYPE" ]; then
+              echo "::warning::No matching device type found for $LABEL, skipping"
+              continue
+            fi
+            UDID=$(xcrun simctl create "screenshot-$LABEL" "$DEVICE_TYPE" "$RUNTIME")
+            xcrun simctl boot "$UDID"
+            xcrun simctl bootstatus "$UDID" -b
+            xcrun simctl install "$UDID" "$APP_PATH"
+            xcrun simctl launch "$UDID" "${{ env.BUNDLE_ID }}"
+            sleep 8
+            xcrun simctl io "$UDID" screenshot "screenshots/$LABEL-about.png"
+            xcrun simctl shutdown "$UDID"
+            xcrun simctl delete "$UDID"
+          done
+          ls -la screenshots
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app-store-screenshots
+          path: screenshots/*.png
