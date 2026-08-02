@@ -52,10 +52,16 @@ jobs:
             python3 -c "import json,sys; d=json.load(sys.stdin)['devicetypes']; names=[x['identifier'] for x in d if 'iPhone' in x['name'] and 'Pro-Max' in x['identifier']]; print(sorted(names)[-1])" 2>/dev/null || true)
           IPAD_TYPE=$(xcrun simctl list devicetypes -j | \
             python3 -c "import json,sys; d=json.load(sys.stdin)['devicetypes']; names=[x['identifier'] for x in d if 'iPad-Pro' in x['identifier'] and '13' in x['identifier']]; print(sorted(names)[-1])" 2>/dev/null || true)
+          # App Store Connect's iPhone screenshot slot for this app currently
+          # asks for the older 6.5" class (1242x2688 / 1284x2778), not the
+          # 6.9" one above - try known 6.5" models newest-first.
+          IPHONE65_TYPE=$(xcrun simctl list devicetypes -j | python3 -c "import json,sys; ids={x['identifier'] for x in json.load(sys.stdin)['devicetypes']}; names=['iPhone-14-Pro-Max','iPhone-13-Pro-Max','iPhone-12-Pro-Max','iPhone-11-Pro-Max','iPhone-Xs-Max']; matches=['com.apple.CoreSimulator.SimDeviceType.'+n for n in names]; found=[m for m in matches if m in ids]; print(found[0] if found else '')" 2>/dev/null || true)
           echo "iPhone device type: $IPHONE_TYPE"
           echo "iPad device type: $IPAD_TYPE"
+          echo "iPhone 6.5-inch device type: $IPHONE65_TYPE"
           echo "iphone_type=$IPHONE_TYPE" >> "$GITHUB_OUTPUT"
           echo "ipad_type=$IPAD_TYPE" >> "$GITHUB_OUTPUT"
+          echo "iphone65_type=$IPHONE65_TYPE" >> "$GITHUB_OUTPUT"
 
       - name: Find newest iOS runtime
         id: runtime
@@ -77,7 +83,7 @@ jobs:
           # app resolves it to the first route returned by IRoutesService.
           ROUTES="AboutPage BookPage RoutesPage CommitteePage RouteDetailsPage"
 
-          for PAIR in "iphone:${{ steps.device_types.outputs.iphone_type }}" "ipad:${{ steps.device_types.outputs.ipad_type }}"; do
+          for PAIR in "iphone:${{ steps.device_types.outputs.iphone_type }}" "ipad:${{ steps.device_types.outputs.ipad_type }}" "iphone65:${{ steps.device_types.outputs.iphone65_type }}"; do
             LABEL="${PAIR%%:*}"
             DEVICE_TYPE="${PAIR#*:}"
             if [ -z "$DEVICE_TYPE" ]; then
@@ -88,6 +94,8 @@ jobs:
             xcrun simctl boot "$UDID"
             xcrun simctl bootstatus "$UDID" -b
             xcrun simctl install "$UDID" "$APP_PATH"
+            # Pre-grant location so the OS permission prompt never covers the Routes/route-detail map
+            xcrun simctl privacy "$UDID" grant location "${{ env.BUNDLE_ID }}"
 
             for ROUTE in $ROUTES; do
               SIMCTL_CHILD_BWOAS_SCREENSHOT_ROUTE="$ROUTE" \
