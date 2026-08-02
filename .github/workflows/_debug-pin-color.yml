@@ -1,0 +1,64 @@
+name: Debug Pin Color Console Log
+
+on:
+  workflow_dispatch:
+
+env:
+  PROJECT_PATH: BoltonWalking.App/BoltonWalking.App.csproj
+  BUNDLE_ID: com.boltonwalking.app
+
+jobs:
+  debug:
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.6'
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore MAUI/iOS workloads
+        run: dotnet workload restore ${{ env.PROJECT_PATH }}
+
+      - name: Build for iOS Simulator
+        run: |
+          dotnet build "${{ env.PROJECT_PATH }}" \
+            -f net10.0-ios -c Release \
+            -p:RuntimeIdentifier=iossimulator-arm64
+
+      - name: Boot simulator, launch with console capture
+        run: |
+          APP_PATH=$(find BoltonWalking.App/bin/Release/net10.0-ios -maxdepth 2 -name "*.app" -type d | head -1)
+          RUNTIME=$(xcrun simctl list runtimes -j | python3 -c "import json,sys; d=json.load(sys.stdin)['runtimes']; ios=[x['identifier'] for x in d if x['name'].startswith('iOS')]; print(sorted(ios)[-1])")
+          DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-13-Pro-Max"
+
+          UDID=$(xcrun simctl create "debug-pin-color" "$DEVICE_TYPE" "$RUNTIME")
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP_PATH"
+          xcrun simctl privacy "$UDID" grant location "${{ env.BUNDLE_ID }}"
+
+          SIMCTL_CHILD_BWOAS_SCREENSHOT_ROUTE="RoutesPage" \
+            xcrun simctl launch --console "$UDID" "${{ env.BUNDLE_ID }}" > console.log 2>&1 &
+          LAUNCH_PID=$!
+
+          sleep 15
+          kill "$LAUNCH_PID" 2>/dev/null || true
+
+          echo "===== CONSOLE LOG ====="
+          cat console.log
+          echo "===== END CONSOLE LOG ====="
+
+      - name: Upload console log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pin-color-console-log
+          path: console.log
