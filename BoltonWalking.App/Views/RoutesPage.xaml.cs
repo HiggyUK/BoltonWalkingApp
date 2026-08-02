@@ -4,6 +4,9 @@ using Microsoft.Maui.Maps;
 using BoltonWalking.App.Models;
 using BoltonWalking.App.ViewModels;
 using MauiPin = Microsoft.Maui.Controls.Maps.Pin;
+#if IOS
+using MapKit;
+#endif
 
 namespace BoltonWalking.App.Views;
 
@@ -11,6 +14,9 @@ public partial class RoutesPage : ContentPage
 {
     private readonly RoutesViewModel viewModel;
     private readonly Dictionary<MauiPin, WalkingRoute> pinLookup = new();
+#if IOS
+    private bool iosAnnotationColoringAttached;
+#endif
 
     public RoutesPage(RoutesViewModel viewModel)
     {
@@ -26,7 +32,39 @@ public partial class RoutesPage : ContentPage
 
         await viewModel.LoadRoutesCommand.ExecuteAsync(null);
         BuildPins();
+
+#if IOS
+        // Unlike Android's MapPinHandler mapping (MauiProgram.cs), a Pin's
+        // PlatformView on iOS is just the MKPointAnnotation data, not the
+        // rendered MKMarkerAnnotationView - so colouring has to happen here,
+        // after MapKit creates the annotation views for our pins.
+        if (!iosAnnotationColoringAttached && RoutesMap.Handler?.PlatformView is MKMapView nativeMap)
+        {
+            iosAnnotationColoringAttached = true;
+            nativeMap.DidAddAnnotationViews += OnIosDidAddAnnotationViews;
+        }
+#endif
     }
+
+#if IOS
+    private void OnIosDidAddAnnotationViews(object? sender, MKMapViewAnnotationEventArgs e)
+    {
+        foreach (var view in e.Views)
+        {
+            if (view is not MKMarkerAnnotationView markerView) continue;
+
+            var pin = pinLookup.Keys.FirstOrDefault(p => Equals(p.MarkerId, markerView.Annotation));
+            if (pin is null || !pinLookup.TryGetValue(pin, out var route)) continue;
+
+            markerView.MarkerTintColor = route.Difficulty switch
+            {
+                RouteDifficulty.Easy => UIKit.UIColor.SystemGreen,
+                RouteDifficulty.Moderate => UIKit.UIColor.SystemOrange,
+                _ => UIKit.UIColor.SystemRed
+            };
+        }
+    }
+#endif
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -53,7 +91,8 @@ public partial class RoutesPage : ContentPage
                 Address = route.ShortDescription,
                 Location = new Location(route.Latitude, route.Longitude),
                 Type = PinType.Place,
-                // Read by the MapPinHandler mapping in MauiProgram.cs to colour the pin by difficulty.
+                // BindingContext drives pin colouring: MapPinHandler mapping in
+                // MauiProgram.cs on Android, OnIosDidAddAnnotationViews above on iOS.
                 BindingContext = route
             };
 
