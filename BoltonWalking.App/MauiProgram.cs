@@ -45,6 +45,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<FirestoreClient>();
         builder.Services.AddSingleton<IRoutesService, RoutesService>();
         builder.Services.AddSingleton<IEventsService, EventsService>();
+        builder.Services.AddSingleton<IGpxService, GpxService>();
 
         builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
         builder.Services.AddSingleton<IFileDownloadService, FileDownloadService>();

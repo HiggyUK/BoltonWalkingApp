@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0-android;net9.0-ios</TargetFrameworks>
+    <TargetFrameworks>net10.0-android;net10.0-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>BoltonWalking.App</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -12,8 +12,12 @@
     <ApplicationTitle>Bolton Walking and Outdoors Appreciation Society</ApplicationTitle>
     <!-- Placeholder - replace with your real registered package/bundle id before publishing -->
     <ApplicationId>com.boltonwalking.app</ApplicationId>
-    <ApplicationDisplayVersion>1.1</ApplicationDisplayVersion>
-    <ApplicationVersion>2</ApplicationVersion>
+    <ApplicationDisplayVersion>1.2</ApplicationDisplayVersion>
+    <ApplicationVersion>4</ApplicationVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <TargetSdkVersion>36</TargetSdkVersion>
   </PropertyGroup>
 
   <!-- Release-signing for Play Store uploads. Keystore path/passwords come from
@@ -47,13 +51,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Explicit reference needed: CommunityToolkit.Maui 15 requires Maui.Controls newer than the bundled Maui.Sdk 10.0.20 default -->
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.90" />
     <!-- MVVM source generators (INotifyPropertyChanged, [ObservableProperty], [RelayCommand]) -->
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!-- Map control (Pin, Map, clustering, custom images) - pinned to match the Microsoft.Maui.Sdk workload version -->
-    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="9.0.120" />
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="10.0.90" />
     <!-- File save/share (for GPX route downloads) -->
-    <PackageReference Include="CommunityToolkit.Maui" Version="9.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+    <PackageReference Include="CommunityToolkit.Maui" Version="15.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.10" />
   </ItemGroup>
 
 </Project>
