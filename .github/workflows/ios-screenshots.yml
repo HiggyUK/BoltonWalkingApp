@@ -65,12 +65,18 @@ jobs:
           echo "Runtime: $RUNTIME"
           echo "runtime=$RUNTIME" >> "$GITHUB_OUTPUT"
 
-      - name: Capture screenshot on a simulator
+      - name: Capture screenshots on a simulator
         env:
           APP_PATH: ${{ steps.locate_app.outputs.app_path }}
           RUNTIME: ${{ steps.runtime.outputs.runtime }}
         run: |
           mkdir -p screenshots
+          # Each value is set as BWOAS_SCREENSHOT_ROUTE in the app's process env
+          # (via simctl's SIMCTL_CHILD_ prefix) - App.xaml.cs reads it on launch
+          # and navigates there. RouteDetailsPage has no tab of its own, so the
+          # app resolves it to the first route returned by IRoutesService.
+          ROUTES="AboutPage BookPage RoutesPage CommitteePage RouteDetailsPage"
+
           for PAIR in "iphone:${{ steps.device_types.outputs.iphone_type }}" "ipad:${{ steps.device_types.outputs.ipad_type }}"; do
             LABEL="${PAIR%%:*}"
             DEVICE_TYPE="${PAIR#*:}"
@@ -82,9 +88,16 @@ jobs:
             xcrun simctl boot "$UDID"
             xcrun simctl bootstatus "$UDID" -b
             xcrun simctl install "$UDID" "$APP_PATH"
-            xcrun simctl launch "$UDID" "${{ env.BUNDLE_ID }}"
-            sleep 8
-            xcrun simctl io "$UDID" screenshot "screenshots/$LABEL-about.png"
+
+            for ROUTE in $ROUTES; do
+              SIMCTL_CHILD_BWOAS_SCREENSHOT_ROUTE="$ROUTE" \
+                xcrun simctl launch --terminate-running-process "$UDID" "${{ env.BUNDLE_ID }}"
+              sleep 8
+              # RouteDetailsPage additionally waits on a route list fetch before navigating
+              if [ "$ROUTE" = "RouteDetailsPage" ]; then sleep 5; fi
+              xcrun simctl io "$UDID" screenshot "screenshots/$LABEL-$ROUTE.png"
+            done
+
             xcrun simctl shutdown "$UDID"
             xcrun simctl delete "$UDID"
           done
