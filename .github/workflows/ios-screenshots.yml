@@ -55,7 +55,10 @@ jobs:
           # App Store Connect's iPhone screenshot slot for this app currently
           # asks for the older 6.5" class (1242x2688 / 1284x2778), not the
           # 6.9" one above - try known 6.5" models newest-first.
-          IPHONE65_TYPE=$(xcrun simctl list devicetypes -j | python3 -c "import json,sys; ids={x['identifier'] for x in json.load(sys.stdin)['devicetypes']}; names=['iPhone-14-Pro-Max','iPhone-13-Pro-Max','iPhone-12-Pro-Max','iPhone-11-Pro-Max','iPhone-Xs-Max']; matches=['com.apple.CoreSimulator.SimDeviceType.'+n for n in names]; found=[m for m in matches if m in ids]; print(found[0] if found else '')" 2>/dev/null || true)
+          # NOTE: iPhone 14/15 Pro Max are 1290x2796 (Dynamic Island redesign
+          # changed the point size) - NOT an accepted size. Only 12/13 Pro Max
+          # (1284x2778) and 11 Pro Max / Xs Max (1242x2688) match.
+          IPHONE65_TYPE=$(xcrun simctl list devicetypes -j | python3 -c "import json,sys; ids={x['identifier'] for x in json.load(sys.stdin)['devicetypes']}; names=['iPhone-13-Pro-Max','iPhone-12-Pro-Max','iPhone-11-Pro-Max','iPhone-Xs-Max']; matches=['com.apple.CoreSimulator.SimDeviceType.'+n for n in names]; found=[m for m in matches if m in ids]; print(found[0] if found else '')" 2>/dev/null || true)
           echo "iPhone device type: $IPHONE_TYPE"
           echo "iPad device type: $IPAD_TYPE"
           echo "iPhone 6.5-inch device type: $IPHONE65_TYPE"
