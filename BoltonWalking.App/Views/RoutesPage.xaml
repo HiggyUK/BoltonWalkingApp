@@ -106,16 +106,6 @@
                    TextColor="{DynamicResource TextMuted}"
                    FontSize="14" />
 
-            <!-- TEMP debug diagnostic, remove once iOS pin colouring is confirmed working -->
-            <Label x:Name="DebugLabel"
-                   Text=""
-                   HorizontalOptions="Fill"
-                   VerticalOptions="End"
-                   Padding="8"
-                   BackgroundColor="Black"
-                   TextColor="Lime"
-                   FontSize="10" />
-
             <Border IsVisible="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}"
                     VerticalOptions="Start"
                     Margin="16"

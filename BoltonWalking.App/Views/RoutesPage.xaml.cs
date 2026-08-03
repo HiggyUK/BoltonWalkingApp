@@ -56,26 +56,16 @@ public partial class RoutesPage : ContentPage
 
         iosAnnotationColoringAttached = true;
         nativeMap.DidAddAnnotationViews += OnIosDidAddAnnotationViews;
-        DebugLabel.Text = "Attached to DidAddAnnotationViews";
     }
-#endif
-
-#if IOS
-    private int iosAnnotationEventFireCount;
 
     private void OnIosDidAddAnnotationViews(object? sender, MKMapViewAnnotationEventArgs e)
     {
-        iosAnnotationEventFireCount++;
-        int markerCount = 0, matchCount = 0, coloredCount = 0;
-
         foreach (var view in e.Views)
         {
             if (view is not MKMarkerAnnotationView markerView) continue;
-            markerCount++;
 
             var pin = pinLookup.Keys.FirstOrDefault(p => Equals(p.MarkerId, markerView.Annotation));
             if (pin is null || !pinLookup.TryGetValue(pin, out var route)) continue;
-            matchCount++;
 
             markerView.MarkerTintColor = route.Difficulty switch
             {
@@ -83,10 +73,7 @@ public partial class RoutesPage : ContentPage
                 RouteDifficulty.Moderate => UIKit.UIColor.SystemOrange,
                 _ => UIKit.UIColor.SystemRed
             };
-            coloredCount++;
         }
-
-        DebugLabel.Text = $"Fire#{iosAnnotationEventFireCount}: views={e.Views.Length} markers={markerCount} matched={matchCount} colored={coloredCount} lookup={pinLookup.Count}";
     }
 #endif
 

@@ -1,0 +1,15 @@
+Bolton Walking and Outdoors Appreciation Society (BWOAS) is a friendly community walking group based in Bolton, organising regular walks across the West Pennine Moors and beyond since 2011. This app is the easiest way to find our routes, book onto a walk, and meet the volunteers who run it all - no experience or fitness level required, all abilities welcome.
+
+FIND A ROUTE
+Browse every BWOAS route on an interactive map, filter by difficulty (Easy, Moderate, Hard), or search by name or venue. Each route includes distance, ascent, estimated time, a full written description, starting point with what3words and grid reference, parking notes, and photos from real walks. Download the GPX file to follow the route on your own device.
+
+BOOK A WALK
+See what's coming up and book your place in a couple of taps, straight through to our existing Ticket Tailor booking page.
+
+MEET THE COMMITTEE
+BWOAS is run entirely by volunteers. Get to know the committee members who organise the walks, in their own words.
+
+PRIVACY BY DESIGN
+No accounts, no ads, no analytics, nothing sold or shared. Location is used on-device only, to show your position on the routes map. Read the full privacy policy at https://higgyuk.github.io/BoltonWalkingApp/privacy.html
+
+Whether you're a regular or considering your first walk with us, come and join us - all abilities welcome.
