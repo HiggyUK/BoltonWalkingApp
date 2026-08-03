@@ -58,7 +58,7 @@
                                     <Label FontSize="17" FontAttributes="Bold">
                                         <Label.FormattedText>
                                             <FormattedString>
-                                                <Span Text="{Binding Name}" />
+                                                <Span Text="{Binding Name}" TextColor="{DynamicResource Secondary}" />
                                                 <Span Text="  " />
                                                 <Span Text="{Binding Role}" TextColor="{DynamicResource Primary}" FontSize="13" />
                                             </FormattedString>
@@ -69,7 +69,7 @@
                                            FontSize="14"
                                            TextColor="{DynamicResource TextMuted}"
                                            IsVisible="{Binding Quote, Converter={StaticResource StringToBoolConverter}}" />
-                                    <Label Text="{Binding Bio}" FontSize="14" />
+                                    <Label Text="{Binding Bio}" FontSize="14" TextColor="{DynamicResource Secondary}" />
                                 </VerticalStackLayout>
                             </Grid>
                         </Border>
