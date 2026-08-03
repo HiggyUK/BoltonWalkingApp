@@ -22,6 +22,18 @@ public static class MauiProgram
             .UseMauiMaps()
             .UseMauiCommunityToolkit();
 
+#if ANDROID
+        builder.ConfigureMauiHandlers(handlers =>
+        {
+            handlers.AddHandler(typeof(Shell), typeof(BoltonWalking.App.Platforms.Android.TabReselectAwareShellRenderer));
+        });
+#elif IOS
+        builder.ConfigureMauiHandlers(handlers =>
+        {
+            handlers.AddHandler(typeof(Shell), typeof(BoltonWalking.App.Platforms.iOS.TabReselectAwareShellRenderer));
+        });
+#endif
+
         // Colours each route pin by difficulty (green/orange/red) to match the
         // badges shown on the route details page. RoutesPage.xaml.cs sets each
         // Pin's BindingContext to its WalkingRoute so this can read Difficulty.
