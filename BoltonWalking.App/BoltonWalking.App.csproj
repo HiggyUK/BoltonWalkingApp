@@ -35,6 +35,15 @@
     <TargetSdkVersion>36</TargetSdkVersion>
   </PropertyGroup>
 
+  <!-- Apple rejects uploads outright if CFBundleShortVersionString has more
+       than 3 period-separated integers ("must be a period-separated list of
+       at most three non-negative integers" - error 90060), so iOS drops the
+       time-of-day fraction and uses just Major.Minor.OADateInt. Android's
+       versionName has no such restriction and keeps the full 4-part value. -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <ApplicationDisplayVersion>$(MarketingVersion).$(BuildOADateInt)</ApplicationDisplayVersion>
+  </PropertyGroup>
+
   <!-- Release-signing for Play Store uploads. Keystore path/passwords come from
        environment variables (BWOAS_KEYSTORE_PATH, BWOAS_KEYSTORE_PASSWORD,
        BWOAS_KEY_ALIAS, BWOAS_KEY_PASSWORD) rather than being committed here -
