@@ -84,7 +84,7 @@ jobs:
           # (via simctl's SIMCTL_CHILD_ prefix) - App.xaml.cs reads it on launch
           # and navigates there. RouteDetailsPage has no tab of its own, so the
           # app resolves it to the first route returned by IRoutesService.
-          ROUTES="AboutPage BookPage RoutesPage CommitteePage RouteDetailsPage"
+          ROUTES="AboutPage BookPage RoutesPage MorePage CommitteePage FaqPage SafetyGuidePage DifficultyGuidePage RouteDetailsPage"
 
           for PAIR in "iphone:${{ steps.device_types.outputs.iphone_type }}" "ipad:${{ steps.device_types.outputs.ipad_type }}" "iphone65:${{ steps.device_types.outputs.iphone65_type }}"; do
             LABEL="${PAIR%%:*}"

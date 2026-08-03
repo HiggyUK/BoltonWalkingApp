@@ -41,6 +41,15 @@ public partial class App : Application
             return;
         }
 
+        // Committee/SafetyGuide/Faq/DifficultyGuide are pushed from the More
+        // tab rather than being tabs themselves, so they need a plain (not
+        // "//"-prefixed) route.
+        if (route is nameof(CommitteePage) or nameof(SafetyGuidePage) or nameof(FaqPage) or nameof(DifficultyGuidePage))
+        {
+            await Shell.Current.GoToAsync(route);
+            return;
+        }
+
         await Shell.Current.GoToAsync($"//{route}");
     }
 }

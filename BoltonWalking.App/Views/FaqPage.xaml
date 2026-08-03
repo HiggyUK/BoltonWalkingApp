@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BoltonWalking.App.Views.FaqPage"
+             Title="FAQ &amp; Info">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Label Text="FAQ &amp; Info"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Secondary}" />
+            <Label Text="Thinking of joining a BWOAS walk? Here are some pointers, based on questions regularly asked by new participants."
+                   FontSize="15"
+                   TextColor="{DynamicResource TextMuted}" />
+
+            <!-- Quick facts -->
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="QUICK FACTS"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1"
+                           TextColor="{DynamicResource Primary}" />
+
+                    <Label Text="✅ Anybody with good mobility is welcome to attend. Required fitness will depend on the route, which is always well advertised."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label FontSize="14" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="✅ Walks are always " />
+                                <Span Text="FREE" FontAttributes="Bold" />
+                                <Span Text=" to attend, but booking is required via Ticket Tailor - see the Book tab." />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label Text="👥 Group sizes are limited to 54 walkers. This keeps a safe 1:8 volunteer-to-participant ratio in general operation, never exceeding 1:12 if the group has to split, and helps minimise our environmental impact."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="🕖 Participants and volunteers generally gather at the chosen venue from 18:30 for a 19:00 start."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="⏱️ Routes are usually around 7km (depending on terrain) and designed to take around 2 hours."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="⛰️ There's a wide range of routes - difficulty is always well advertised."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="ℹ️ Full details for each walk are shared via Facebook and Ticket Tailor before booking opens."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="🚌 Most BWOAS activities are accessible via public transport. We also encourage car pooling to minimise environmental impact."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Good to know -->
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="👣 GOOD TO KNOW"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1"
+                           TextColor="{DynamicResource Primary}" />
+
+                    <Label Text="🙌 There's no membership subscription - just book your place and attend as and when."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="👋 Coming solo? You won't be the only one! There's a friendly, welcoming core of regulars who help promote a supportive and inclusive environment for all. You'll be made to feel right at home and make new friends in no time."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="💬 There's an active WhatsApp community for walk updates, photos and social chat."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="🐶 We love dogs! But all four-legged participants must be kept on a lead and under close control at all times. Some routes have stiles where dogs may need lifting over."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label FontSize="14" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="🚶‍♀️ BWOAS walks are very much a social occasion, undertaken at a pace suitable for the terrain and mixed ability of participants. " />
+                                <Span Text="It is not a race" FontAttributes="Bold" />
+                                <Span Text=" - there are regular regrouping points, and volunteers are posted throughout the group to assist where necessary." />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label Text="🥾 Appropriate, sturdy footwear is always required. Trails can be uneven, muddy or boggy."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="🔦 ALWAYS bring a torch, water, and dress appropriately for the weather. Poles are encouraged."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="💨 Please be mindful with vaping, as it can upset other participants. Anyone vaping is asked to respect others by limiting use to regrouping points, away from the rest of the group."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="🦺 All routes are &quot;reccied&quot; and risk assessed by volunteers within the group."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label FontSize="14" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="📡 Group support on every walk is provided by volunteers with two-way radios, first aid supplies and mapping. Volunteers give up their free time to help out and " />
+                                <Span Text="are not offering qualified instruction, nor personally liable for any injuries or damage to/loss of personal property." FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label Text="⚠️ BWOAS has a community sports club policy with Protectivity that covers individual participants in the case of personal injury and loss or damage to personal property."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Booking times -->
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="⏰ BOOKING TIMES"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1"
+                           TextColor="{DynamicResource Primary}" />
+
+                    <Label Text="🔵 Monday walks open from the previous Thursday at 18:00"
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="🟢 Wednesday walks open from the previous Sunday at 18:00"
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+
+                    <Label Text="It's advisable to set an alarm to book your space, as walks often hit full capacity quickly."
+                           FontSize="14"
+                           FontAttributes="Italic"
+                           TextColor="{DynamicResource TextMuted}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="Book a walk"
+                    Clicked="OnBookClicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

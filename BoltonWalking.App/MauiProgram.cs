@@ -60,6 +60,10 @@ public static class MauiProgram
         builder.Services.AddTransient<RoutesPage>();
         builder.Services.AddTransient<RouteDetailsPage>();
         builder.Services.AddTransient<CommitteePage>();
+        builder.Services.AddTransient<MorePage>();
+        builder.Services.AddTransient<SafetyGuidePage>();
+        builder.Services.AddTransient<FaqPage>();
+        builder.Services.AddTransient<DifficultyGuidePage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

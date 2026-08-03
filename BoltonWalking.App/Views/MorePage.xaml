@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BoltonWalking.App.Views.MorePage"
+             Title="More">
+
+    <VerticalStackLayout Padding="20" Spacing="12">
+
+        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 12"
+                Padding="16">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnFaqTapped" />
+            </Border.GestureRecognizers>
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <Label Text="FAQ &amp; Info"
+                           FontSize="17"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource Secondary}" />
+                    <Label Text="Thinking of joining a walk? Start here"
+                           FontSize="13"
+                           TextColor="{DynamicResource TextMuted}" />
+                </VerticalStackLayout>
+                <Label Grid.Column="1"
+                       Text="&#8250;"
+                       FontSize="22"
+                       VerticalOptions="Center"
+                       TextColor="{DynamicResource TextMuted}" />
+            </Grid>
+        </Border>
+
+        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 12"
+                Padding="16">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnSafetyGuideTapped" />
+            </Border.GestureRecognizers>
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <Label Text="Safety Guide"
+                           FontSize="17"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource Secondary}" />
+                    <Label Text="What to expect and how our walks are run safely"
+                           FontSize="13"
+                           TextColor="{DynamicResource TextMuted}" />
+                </VerticalStackLayout>
+                <Label Grid.Column="1"
+                       Text="&#8250;"
+                       FontSize="22"
+                       VerticalOptions="Center"
+                       TextColor="{DynamicResource TextMuted}" />
+            </Grid>
+        </Border>
+
+        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 12"
+                Padding="16">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnDifficultyGuideTapped" />
+            </Border.GestureRecognizers>
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <Label Text="Difficulty Guide"
+                           FontSize="17"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource Secondary}" />
+                    <Label Text="What Easy/Moderate/Hard actually mean on the ground"
+                           FontSize="13"
+                           TextColor="{DynamicResource TextMuted}" />
+                </VerticalStackLayout>
+                <Label Grid.Column="1"
+                       Text="&#8250;"
+                       FontSize="22"
+                       VerticalOptions="Center"
+                       TextColor="{DynamicResource TextMuted}" />
+            </Grid>
+        </Border>
+
+        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 12"
+                Padding="16">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCommitteeTapped" />
+            </Border.GestureRecognizers>
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <Label Text="Committee"
+                           FontSize="17"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource Secondary}" />
+                    <Label Text="Meet the volunteers who run BWOAS"
+                           FontSize="13"
+                           TextColor="{DynamicResource TextMuted}" />
+                </VerticalStackLayout>
+                <Label Grid.Column="1"
+                       Text="&#8250;"
+                       FontSize="22"
+                       VerticalOptions="Center"
+                       TextColor="{DynamicResource TextMuted}" />
+            </Grid>
+        </Border>
+
+    </VerticalStackLayout>
+
+</ContentPage>

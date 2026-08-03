@@ -17,10 +17,10 @@
                       Icon="icon_routes.svg"
                       ContentTemplate="{DataTemplate views:RoutesPage}"
                       Route="RoutesPage" />
-        <ShellContent Title="Committee"
-                      Icon="icon_committee.svg"
-                      ContentTemplate="{DataTemplate views:CommitteePage}"
-                      Route="CommitteePage" />
+        <ShellContent Title="More"
+                      Icon="icon_more.svg"
+                      ContentTemplate="{DataTemplate views:MorePage}"
+                      Route="MorePage" />
     </TabBar>
 
 </Shell>

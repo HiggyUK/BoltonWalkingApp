@@ -8,8 +8,13 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
 
-        // Registered explicitly because it's navigated to via GoToAsync with
-        // a query parameter, rather than being one of the TabBar's items.
+        // Registered explicitly because these are pushed via GoToAsync rather
+        // than being one of the TabBar's own items - RouteDetailsPage from the
+        // Routes tab, Committee/SafetyGuide from the More tab's menu.
         Routing.RegisterRoute(nameof(RouteDetailsPage), typeof(RouteDetailsPage));
+        Routing.RegisterRoute(nameof(CommitteePage), typeof(CommitteePage));
+        Routing.RegisterRoute(nameof(SafetyGuidePage), typeof(SafetyGuidePage));
+        Routing.RegisterRoute(nameof(FaqPage), typeof(FaqPage));
+        Routing.RegisterRoute(nameof(DifficultyGuidePage), typeof(DifficultyGuidePage));
     }
 }

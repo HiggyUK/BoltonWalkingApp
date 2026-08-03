@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BoltonWalking.App.Views.SafetyGuidePage"
+             Title="Safety Guide">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Label Text="Safety Guide"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Secondary}" />
+            <Label Text="For Monday and Wednesday walks"
+                   FontSize="15"
+                   TextColor="{DynamicResource TextMuted}" />
+            <Label Text="Last reviewed: June 2025"
+                   FontSize="12"
+                   TextColor="{DynamicResource TextMuted}" />
+
+            <Label Text="BWOAS is a group of volunteers, friends and acquaintances organising informal walks in the community. New people are welcome to join in, but it is important to note that the outings are NOT professionally guided in any capacity and are peer led. However, an effort is collectively upheld to make sure that the walks are as safe for everybody as they possibly can be by applying the following procedures."
+                   FontSize="15"
+                   TextColor="{DynamicResource Secondary}" />
+
+            <!-- Highlighted callout, same visual treatment as the error banner on the Routes tab -->
+            <Border BackgroundColor="{DynamicResource Primary}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <Label Text="The aim of the group is to provide a safe and supportive environment for all to enjoy the outdoors and improve their lifestyle. Anybody choosing to attend a BWOAS walk does so in the understanding that they are wholly responsible for their own actions, safety and belongings."
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       TextColor="White" />
+            </Border>
+
+            <!-- Booking & attendance -->
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="BOOKING &amp; ATTENDANCE"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1"
+                           TextColor="{DynamicResource Primary}" />
+                    <Label FontSize="14" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="All participants over the age of eighteen must book onto walks via the BWOAS Ticket Tailor platform and " />
+                                <Span Text="must sign up themselves" FontAttributes="Bold" />
+                                <Span Text=" using their own contact details, confirming they have read this safety guide and all provided information." />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="A parent/guardian must assume full responsibility for any children or young people under the age of eighteen in their care."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                    <Label Text="If you're unable to make a walk, please use the &quot;Manage Tickets&quot; option to cancel and free up the space for someone else."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- What to bring -->
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="WHAT TO BRING"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1"
+                           TextColor="{DynamicResource Primary}" />
+                    <Label FontSize="14" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="All participants must be suitably equipped for each outing - sturdy footwear for the terrain, and clothing appropriate for the weather. Even in summer, carry a torch and warm layers. Poles are always recommended. " />
+                                <Span Text="Persons arriving poorly equipped will be turned away." FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="If you use personal medication, carry it with you at all times - this is your own responsibility."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                    <Label Text="Dogs must be on leads and under control at all times."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Our volunteers -->
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="OUR VOLUNTEERS"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1"
+                           TextColor="{DynamicResource Primary}" />
+                    <Label FontSize="14" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="There's always an adequate number of volunteers on every walk. Volunteers are experienced BWOAS members who are there to advise and generally manage the group, but " />
+                                <Span Text="are in no way responsible for the safety of participants or their belongings." FontAttributes="Bold" />
+                                <Span Text=" Volunteers are identified at the start of each walk." />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="Volunteers are evenly spaced throughout the group, including one at the front and one at the back. Group sizes typically don't exceed a 1:8 volunteer-to-participant ratio, and never exceed 1:12, so everyone is close to a volunteer if assistance is needed."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                    <Label Text="Volunteers are familiar with the route, risk assessment, and predetermined regrouping points, and carry a first aid kit, a radio, and suitable mapping."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Before / during the walk -->
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="BEFORE &amp; DURING THE WALK"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1"
+                           TextColor="{DynamicResource Primary}" />
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Before the walk"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{DynamicResource Secondary}" />
+                        <Label Text="An initial attendance check accounts for everybody on the list, followed by an informal brief covering what to expect, who the volunteers are, and a chance to ask questions."
+                               FontSize="14"
+                               TextColor="{DynamicResource Secondary}" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="During the walk"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{DynamicResource Secondary}" />
+                        <Label Text="Volunteers are on hand should any assistance be required, with advice and guidance given where appropriate along the way. A moderate pace suitable for everybody in the group is managed throughout."
+                               FontSize="14"
+                               TextColor="{DynamicResource Secondary}" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Regrouping"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{DynamicResource Secondary}" />
+                        <Label Text="There are regular stops at predetermined locations to regroup and complete a head count."
+                               FontSize="14"
+                               TextColor="{DynamicResource Secondary}" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

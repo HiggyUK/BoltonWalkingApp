@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BoltonWalking.App.Views.DifficultyGuidePage"
+             Title="Difficulty Guide">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Label Text="Difficulty Guide"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Secondary}" />
+            <Label Text="A rough guide to what each route's difficulty rating means, with some real examples."
+                   FontSize="15"
+                   TextColor="{DynamicResource TextMuted}" />
+
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="6">
+                    <Label FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="🟢 " />
+                                <Span Text="VERY EASY" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="Terrain will be largely flat with gentle inclines. A typical walk would be the MBB Canal from the Volunteer, Darcy Lever. Anybody with a very basic level of fitness will be fine to attend."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="6">
+                    <Label FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="🟢🟢 " />
+                                <Span Text="BECOMING MODERATE" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="There may be occasional steeper ground, uneven terrain or a particular obstacle. Also may be a Very Easy route that's a little harder in the darker months. Think Longworth Clough from the Masons Arms, Egerton."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="6">
+                    <Label FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="🟠🟠 " />
+                                <Span Text="MODERATE" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="Slightly challenging slopes on ascent or descent sections - there could also be boggy terrain, heather, gorse, long grass, stream crossings, busy road crossings, or anything requiring more attentive care. More suitable for those with at least a little walking experience. An example walk could be Darwen Tower from the Royal at Tockholes in the lighter months. Regular walking experience required."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="6">
+                    <Label FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="🔴🔴 " />
+                                <Span Text="DIFFICULT" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="Steeper hills, arduous terrain and difficult obstacles that are likely to require caution may be featured - or this could be a Moderate summer route being done in night conditions. Something like Peel Tower from the Irwell Works Brewery in Ramsbottom as a night walk, or Two Lads together with Rivington Pike in daylight."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="6">
+                    <Label FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource Secondary}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="🔴🔴🔴 " />
+                                <Span Text="STRENUOUS AND CHALLENGING" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="Everybody is going to be out of breath on steep gradients, and there will be tough ground underfoot. A moderate or higher level of fitness and regular hill walking experience is required. We don't have many routes this difficult, but think Winter Hill from the Black Dog."
+                           FontSize="14"
+                           TextColor="{DynamicResource Secondary}" />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
