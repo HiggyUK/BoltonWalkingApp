@@ -12,8 +12,23 @@
     <ApplicationTitle>Bolton Walking and Outdoors Appreciation Society</ApplicationTitle>
     <!-- Placeholder - replace with your real registered package/bundle id before publishing -->
     <ApplicationId>com.boltonwalking.app</ApplicationId>
-    <ApplicationDisplayVersion>1.2</ApplicationDisplayVersion>
-    <ApplicationVersion>4</ApplicationVersion>
+
+    <!-- Bump this by hand for each real feature release (1.2 -> 1.3 etc). The
+         build/revision portion below is computed automatically from the
+         current date/time every build - never edit it or ApplicationVersion
+         directly. -->
+    <MarketingVersion>1.3</MarketingVersion>
+
+    <!-- OLE Automation date: whole part = days since 30 Dec 1899, fractional
+         part = time of day (e.g. 46237.47 = 03 Aug 2026, ~11:23). Splitting
+         it gives a build id that's always unique and always increasing.
+         ApplicationVersion (Android versionCode / iOS CFBundleVersion) must
+         be a single plain integer, so it drops the dot: same digits, no ".". -->
+    <BuildOADate>$([System.DateTime]::Now.ToOADate().ToString('F2'))</BuildOADate>
+    <BuildOADateInt>$(BuildOADate.Split('.')[0])</BuildOADateInt>
+    <BuildOADateFrac>$(BuildOADate.Split('.')[1])</BuildOADateFrac>
+    <ApplicationDisplayVersion>$(MarketingVersion).$(BuildOADateInt).$(BuildOADateFrac)</ApplicationDisplayVersion>
+    <ApplicationVersion>$(BuildOADateInt)$(BuildOADateFrac)</ApplicationVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
