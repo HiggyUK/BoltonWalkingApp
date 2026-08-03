@@ -44,7 +44,7 @@ jobs:
           java-version: '17'
 
       - name: Restore Android workload
-        run: dotnet workload restore ${{ env.PROJECT_PATH }}
+        run: dotnet workload restore ${{ env.PROJECT_PATH }} -p:TargetFrameworks=net10.0-android
 
       - name: Decode keystore
         run: |
@@ -58,7 +58,12 @@ jobs:
           BWOAS_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           BWOAS_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          dotnet publish "${{ env.PROJECT_PATH }}" -f net10.0-android -c Release
+          # -p:TargetFrameworks (plural, overriding the whole list) rather
+          # than -f: with a multi-targeted project, MSBuild's outer
+          # cross-targeting evaluation still touches every TFM in
+          # <TargetFrameworks> before narrowing down, which fails here since
+          # this Linux runner has no iOS workload installed.
+          dotnet publish "${{ env.PROJECT_PATH }}" -p:TargetFrameworks=net10.0-android -c Release
 
       - name: Locate AAB
         id: locate_aab
