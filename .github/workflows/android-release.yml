@@ -63,7 +63,7 @@ jobs:
           # cross-targeting evaluation still touches every TFM in
           # <TargetFrameworks> before narrowing down, which fails here since
           # this Linux runner has no iOS workload installed.
-          dotnet publish "${{ env.PROJECT_PATH }}" -p:TargetFrameworks=net10.0-android -c Release
+          dotnet publish "${{ env.PROJECT_PATH }}" -p:TargetFrameworks=net10.0-android -f net10.0-android -c Release
 
       - name: Locate AAB
         id: locate_aab
