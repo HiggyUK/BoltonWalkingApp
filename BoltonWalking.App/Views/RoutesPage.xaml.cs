@@ -38,12 +38,12 @@ public partial class RoutesPage : ContentPage
         // attached BEFORE BuildPins() below - adding pins makes MapKit create
         // and fire DidAddAnnotationViews for them immediately, so subscribing
         // afterwards misses that first batch.
-        Console.WriteLine($"[BWOAS-DEBUG] OnAppearing: Handler={RoutesMap.Handler}, PlatformView={RoutesMap.Handler?.PlatformView}, attached={iosAnnotationColoringAttached}");
+        DebugLabel.Text = $"OnAppearing: handler={RoutesMap.Handler != null} platform={RoutesMap.Handler?.PlatformView?.GetType().Name} attached={iosAnnotationColoringAttached}";
         if (!iosAnnotationColoringAttached && RoutesMap.Handler?.PlatformView is MKMapView nativeMap)
         {
             iosAnnotationColoringAttached = true;
             nativeMap.DidAddAnnotationViews += OnIosDidAddAnnotationViews;
-            Console.WriteLine("[BWOAS-DEBUG] Subscribed to DidAddAnnotationViews");
+            DebugLabel.Text += " | subscribed";
         }
 #endif
 
@@ -52,26 +52,32 @@ public partial class RoutesPage : ContentPage
     }
 
 #if IOS
+    private int iosAnnotationEventFireCount;
+
     private void OnIosDidAddAnnotationViews(object? sender, MKMapViewAnnotationEventArgs e)
     {
-        Console.WriteLine($"[BWOAS-DEBUG] DidAddAnnotationViews fired, views={e.Views.Length}, pinLookup.Count={pinLookup.Count}");
+        iosAnnotationEventFireCount++;
+        int markerCount = 0, matchCount = 0, coloredCount = 0;
+
         foreach (var view in e.Views)
         {
-            Console.WriteLine($"[BWOAS-DEBUG]   view type={view.GetType().Name}");
             if (view is not MKMarkerAnnotationView markerView) continue;
+            markerCount++;
 
             var pin = pinLookup.Keys.FirstOrDefault(p => Equals(p.MarkerId, markerView.Annotation));
-            Console.WriteLine($"[BWOAS-DEBUG]   markerView.Annotation={markerView.Annotation}, matchedPin={pin != null}");
             if (pin is null || !pinLookup.TryGetValue(pin, out var route)) continue;
+            matchCount++;
 
-            Console.WriteLine($"[BWOAS-DEBUG]   route={route.Name}, difficulty={route.Difficulty}");
             markerView.MarkerTintColor = route.Difficulty switch
             {
                 RouteDifficulty.Easy => UIKit.UIColor.SystemGreen,
                 RouteDifficulty.Moderate => UIKit.UIColor.SystemOrange,
                 _ => UIKit.UIColor.SystemRed
             };
+            coloredCount++;
         }
+
+        DebugLabel.Text = $"Fire#{iosAnnotationEventFireCount}: views={e.Views.Length} markers={markerCount} matched={matchCount} colored={coloredCount} lookup={pinLookup.Count}";
     }
 #endif
 

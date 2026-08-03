@@ -1,4 +1,4 @@
-name: Debug Pin Color Console Log
+name: Debug Pin Color Screenshot
 
 on:
   workflow_dispatch:
@@ -33,7 +33,7 @@ jobs:
             -f net10.0-ios -c Release \
             -p:RuntimeIdentifier=iossimulator-arm64
 
-      - name: Boot simulator, launch with console capture
+      - name: Boot simulator, launch, screenshot with debug overlay
         run: |
           APP_PATH=$(find BoltonWalking.App/bin/Release/net10.0-ios -maxdepth 2 -name "*.app" -type d | head -1)
           RUNTIME=$(xcrun simctl list runtimes -j | python3 -c "import json,sys; d=json.load(sys.stdin)['runtimes']; ios=[x['identifier'] for x in d if x['name'].startswith('iOS')]; print(sorted(ios)[-1])")
@@ -46,19 +46,12 @@ jobs:
           xcrun simctl privacy "$UDID" grant location "${{ env.BUNDLE_ID }}"
 
           SIMCTL_CHILD_BWOAS_SCREENSHOT_ROUTE="RoutesPage" \
-            xcrun simctl launch --console "$UDID" "${{ env.BUNDLE_ID }}" > console.log 2>&1 &
-          LAUNCH_PID=$!
+            xcrun simctl launch "$UDID" "${{ env.BUNDLE_ID }}"
+          sleep 10
+          xcrun simctl io "$UDID" screenshot debug-screenshot.png
 
-          sleep 15
-          kill "$LAUNCH_PID" 2>/dev/null || true
-
-          echo "===== CONSOLE LOG ====="
-          cat console.log
-          echo "===== END CONSOLE LOG ====="
-
-      - name: Upload console log
-        if: always()
+      - name: Upload screenshot
         uses: actions/upload-artifact@v4
         with:
-          name: pin-color-console-log
-          path: console.log
+          name: debug-pin-color-screenshot
+          path: debug-screenshot.png
