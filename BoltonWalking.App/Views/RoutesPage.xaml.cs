@@ -24,6 +24,13 @@ public partial class RoutesPage : ContentPage
         this.viewModel = viewModel;
         BindingContext = viewModel;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
+
+#if IOS
+        // RoutesMap.Handler is still null at OnAppearing time (the native map
+        // view isn't created yet then), so subscribe as soon as it actually
+        // becomes available instead of assuming a fixed point in the lifecycle.
+        RoutesMap.HandlerChanged += (_, _) => TryAttachIosPinColoring();
+#endif
     }
 
     protected override async void OnAppearing()
@@ -31,25 +38,27 @@ public partial class RoutesPage : ContentPage
         base.OnAppearing();
 
 #if IOS
-        // Unlike Android's MapPinHandler mapping (MauiProgram.cs), a Pin's
-        // PlatformView on iOS is just the MKPointAnnotation data, not the
-        // rendered MKMarkerAnnotationView - so colouring has to happen here,
-        // once MapKit creates the annotation views for our pins. Must be
-        // attached BEFORE BuildPins() below - adding pins makes MapKit create
-        // and fire DidAddAnnotationViews for them immediately, so subscribing
-        // afterwards misses that first batch.
-        DebugLabel.Text = $"OnAppearing: handler={RoutesMap.Handler != null} platform={RoutesMap.Handler?.PlatformView?.GetType().Name} attached={iosAnnotationColoringAttached}";
-        if (!iosAnnotationColoringAttached && RoutesMap.Handler?.PlatformView is MKMapView nativeMap)
-        {
-            iosAnnotationColoringAttached = true;
-            nativeMap.DidAddAnnotationViews += OnIosDidAddAnnotationViews;
-            DebugLabel.Text += " | subscribed";
-        }
+        TryAttachIosPinColoring();
 #endif
 
         await viewModel.LoadRoutesCommand.ExecuteAsync(null);
         BuildPins();
     }
+
+#if IOS
+    private void TryAttachIosPinColoring()
+    {
+        // Unlike Android's MapPinHandler mapping (MauiProgram.cs), a Pin's
+        // PlatformView on iOS is just the MKPointAnnotation data, not the
+        // rendered MKMarkerAnnotationView - so colouring has to happen here,
+        // once MapKit creates the annotation views for our pins.
+        if (iosAnnotationColoringAttached || RoutesMap.Handler?.PlatformView is not MKMapView nativeMap) return;
+
+        iosAnnotationColoringAttached = true;
+        nativeMap.DidAddAnnotationViews += OnIosDidAddAnnotationViews;
+        DebugLabel.Text = "Attached to DidAddAnnotationViews";
+    }
+#endif
 
 #if IOS
     private int iosAnnotationEventFireCount;
