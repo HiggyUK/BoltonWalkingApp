@@ -1,0 +1,95 @@
+name: Android Release Build & Upload
+
+# Manual trigger only - builds a signed Release .aab and uploads it to the
+# Google Play Console. Unlike iOS, this doesn't need a macOS runner.
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Play Console track to release to'
+        required: true
+        default: 'internal'
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+
+env:
+  PROJECT_PATH: BoltonWalking.App/BoltonWalking.App.csproj
+  PACKAGE_NAME: com.boltonwalking.app
+
+permissions:
+  contents: read
+  id-token: write # required for Workload Identity Federation
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
+      - name: Restore Android workload
+        run: dotnet workload restore ${{ env.PROJECT_PATH }}
+
+      - name: Decode keystore
+        run: |
+          mkdir -p "$RUNNER_TEMP/keystore"
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > "$RUNNER_TEMP/keystore/bwoas-upload.keystore"
+
+      - name: Publish signed AAB
+        env:
+          BWOAS_KEYSTORE_PATH: ${{ runner.temp }}/keystore/bwoas-upload.keystore
+          BWOAS_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          BWOAS_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          BWOAS_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          dotnet publish "${{ env.PROJECT_PATH }}" -f net10.0-android -c Release
+
+      - name: Locate AAB
+        id: locate_aab
+        run: |
+          AAB_PATH=$(find BoltonWalking.App/bin/Release/net10.0-android -maxdepth 1 -name "*-Signed.aab" | head -1)
+          echo "AAB at: $AAB_PATH"
+          echo "aab_path=$AAB_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Upload AAB as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BoltonWalkingApp-android-aab
+          path: ${{ steps.locate_aab.outputs.aab_path }}
+
+      # No downloadable service-account key needed - authenticates via OIDC
+      # token exchange (Workload Identity Federation), since the Google Cloud
+      # project has key creation disabled by org policy (Secure by Default).
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          # Points at the WIF-generated credential file (not a raw key) that
+          # the auth step above just wrote out.
+          serviceAccountJson: ${{ steps.auth.outputs.credentials_file_path }}
+          packageName: ${{ env.PACKAGE_NAME }}
+          releaseFiles: ${{ steps.locate_aab.outputs.aab_path }}
+          track: ${{ inputs.track }}
+          status: completed
