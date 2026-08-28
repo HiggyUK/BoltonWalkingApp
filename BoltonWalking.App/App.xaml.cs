@@ -8,6 +8,15 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+
+        // The app has no dark-mode palette - several controls hardcode literal
+        // White/Black colours (e.g. RoutesPage's popup and search bar
+        // backgrounds, AboutPage's title text) that don't move with the
+        // system theme the way Label/SearchBar's own default text colour
+        // does. Left alone, a device in Dark Mode gets white-on-white or
+        // black-on-black text. Pin to Light until the app gets a real dark
+        // theme (i.e. AppThemeBinding everywhere instead of literal colours).
+        UserAppTheme = AppTheme.Light;
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
