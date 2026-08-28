@@ -40,5 +40,14 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+
+	<!--
+		Works around a MAUI 10 regression (dotnet/maui#34143, #34780) where the
+		Shell TabBar ghosts/loses its selected item under iOS 26's Liquid Glass
+		redesign. Opting out reverts tab bars to the pre-iOS 26 style until
+		MAUI ships a fix. Safe to remove once that lands.
+	-->
+	<key>UIDesignRequiresCompatibility</key>
+	<true/>
 </dict>
 </plist>
