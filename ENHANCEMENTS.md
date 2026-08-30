@@ -20,15 +20,11 @@ both platforms show the name under the pin.
   or dropping to a custom marker renderer.
 - Where: `MauiProgram.cs` (`MapPinHandler.Mapper` mapping), `RoutesPage.xaml.cs` (`BuildPins()`).
 
-### 2. Map/List view toggle next to the search bar
-Add a button beside the search bar on the Routes page to switch between
-the current map view and a scrollable list view of routes (name,
-distance/difficulty, tap to open details) - useful for users who find
-tapping small map pins fiddly, and for quickly scanning all routes at once.
-
-- Where: `RoutesPage.xaml` (new toggle button + `CollectionView` for the
-  list, swap `IsVisible` with the existing `maps:Map`), `RoutesViewModel.cs`
-  (a `ViewMode` property, reusing the existing `FilteredRoutes`).
+### 2. Map/List view toggle next to the search bar - Done
+Implemented: an icon button beside the search bar toggles between the map
+and a scrollable `CollectionView` list (difficulty dot, name, distance/stats),
+sharing the same search/difficulty filter and tapping through to the same
+route details page. See `RoutesPage.xaml`, `RoutesViewModel.cs` (`IsListView`).
 
 ## Theming
 
