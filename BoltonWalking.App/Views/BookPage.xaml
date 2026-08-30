@@ -16,7 +16,6 @@
     <ContentPage.Resources>
         <converters:IntToBoolConverter x:Key="IntToBoolConverter" />
         <converters:IntToInverseBoolConverter x:Key="IntToInverseBoolConverter" />
-        <converters:DifficultyToColorConverter x:Key="DifficultyToColorConverter" />
         <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
         <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
     </ContentPage.Resources>
@@ -81,12 +80,12 @@
                                     <Label Text="{Binding Route.Venue}" FontSize="13" TextColor="{DynamicResource TextMuted}" />
 
                                     <FlexLayout Wrap="Wrap" AlignItems="Center" JustifyContent="Start" Margin="0,4,0,0">
-                                        <Border BackgroundColor="{Binding Route.Difficulty, Converter={StaticResource DifficultyToColorConverter}}"
+                                        <Border BackgroundColor="White"
                                                 StrokeShape="RoundRectangle 14"
                                                 Stroke="Transparent"
                                                 Padding="12,5"
                                                 Margin="0,0,8,0">
-                                            <Label Text="{Binding Route.DifficultyBadge}" TextColor="White" FontAttributes="Bold" FontSize="12" />
+                                            <Label Text="{Binding Route.DifficultyBadge}" TextColor="{DynamicResource Secondary}" FontAttributes="Bold" FontSize="12" />
                                         </Border>
                                         <Label Text="{Binding DisplayDate}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" />
                                     </FlexLayout>

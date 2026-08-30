@@ -13,7 +13,6 @@
     <ContentPage.Resources>
         <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
         <converters:IntToBoolConverter x:Key="IntToBoolConverter" />
-        <converters:DifficultyToColorConverter x:Key="DifficultyToColorConverter" />
     </ContentPage.Resources>
 
     <ScrollView>
@@ -52,12 +51,12 @@
 
                 <!-- Difficulty + stats -->
                 <FlexLayout Wrap="Wrap" AlignItems="Center" JustifyContent="Start">
-                    <Border BackgroundColor="{Binding Route.Difficulty, Converter={StaticResource DifficultyToColorConverter}}"
+                    <Border BackgroundColor="{DynamicResource SurfaceMuted}"
                             StrokeShape="RoundRectangle 14"
                             Stroke="Transparent"
                             Padding="12,5"
                             Margin="0,0,8,8">
-                        <Label Text="{Binding Route.DifficultyBadge}" TextColor="White" FontAttributes="Bold" FontSize="13" />
+                        <Label Text="{Binding Route.DifficultyBadge}" TextColor="{DynamicResource Secondary}" FontAttributes="Bold" FontSize="13" />
                     </Border>
                     <Label Text="{Binding Route.Stats}" FontSize="14" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" Margin="0,0,0,8" />
                 </FlexLayout>
