@@ -1,5 +1,7 @@
 using BoltonWalking.App.Services;
 using BoltonWalking.App.Views;
+using Plugin.LocalNotification;
+using Plugin.LocalNotification.EventArgs;
 
 namespace BoltonWalking.App;
 
@@ -17,6 +19,27 @@ public partial class App : Application
         // black-on-black text. Pin to Light until the app gets a real dark
         // theme (i.e. AppThemeBinding everywhere instead of literal colours).
         UserAppTheme = AppTheme.Light;
+
+        LocalNotificationCenter.Current.NotificationActionTapped += OnBookingNotificationTapped;
+    }
+
+    // Tapping a "booking is now open" notification (see
+    // BookingNotificationService) should take the user straight to the Book
+    // tab rather than just reopening the app wherever it last was.
+    private static void OnBookingNotificationTapped(NotificationActionEventArgs e)
+    {
+        if (e.Request.ReturningData != IBookingNotificationService.BookingOpenedReturningData) return;
+
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            // On a cold start (app wasn't already running) Shell.Current
+            // isn't ready the instant this event fires - give it a moment.
+            for (var attempt = 0; attempt < 10 && Shell.Current is null; attempt++)
+                await Task.Delay(200);
+
+            if (Shell.Current is not null)
+                await Shell.Current.GoToAsync($"//{nameof(BookPage)}");
+        });
     }
 
     protected override Window CreateWindow(IActivationState? activationState)

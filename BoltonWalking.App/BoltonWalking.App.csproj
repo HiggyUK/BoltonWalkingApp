@@ -84,6 +84,8 @@
     <!-- File save/share (for GPX route downloads) -->
     <PackageReference Include="CommunityToolkit.Maui" Version="15.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.10" />
+    <!-- Local (device-scheduled, no backend) notification when a walk's booking opens -->
+    <PackageReference Include="Plugin.LocalNotification" Version="14.1.1" />
   </ItemGroup>
 
 </Project>

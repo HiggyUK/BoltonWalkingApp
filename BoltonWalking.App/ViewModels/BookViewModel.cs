@@ -9,6 +9,7 @@ namespace BoltonWalking.App.ViewModels;
 public partial class BookViewModel : ObservableObject
 {
     private readonly IEventsService eventsService;
+    private readonly IBookingNotificationService bookingNotificationService;
 
     public ObservableCollection<EventItem> Events { get; } = new();
 
@@ -18,9 +19,10 @@ public partial class BookViewModel : ObservableObject
     [ObservableProperty]
     private string? errorMessage;
 
-    public BookViewModel(IEventsService eventsService)
+    public BookViewModel(IEventsService eventsService, IBookingNotificationService bookingNotificationService)
     {
         this.eventsService = eventsService;
+        this.bookingNotificationService = bookingNotificationService;
     }
 
     [RelayCommand]
@@ -36,6 +38,8 @@ public partial class BookViewModel : ObservableObject
             Events.Clear();
             foreach (var item in items)
                 Events.Add(item);
+
+            await bookingNotificationService.ScheduleForUpcomingEventsAsync(items);
         }
         catch (Exception ex)
         {

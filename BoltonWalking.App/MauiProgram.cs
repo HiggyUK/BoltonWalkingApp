@@ -6,6 +6,7 @@ using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Maps;
+using Plugin.LocalNotification;
 #if ANDROID
 using Android.Gms.Maps.Model;
 #endif
@@ -20,7 +21,8 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiMaps()
-            .UseMauiCommunityToolkit();
+            .UseMauiCommunityToolkit()
+            .UseLocalNotification();
 
 #if ANDROID
         builder.ConfigureMauiHandlers(handlers =>
@@ -58,6 +60,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IRoutesService, RoutesService>();
         builder.Services.AddSingleton<IEventsService, EventsService>();
         builder.Services.AddSingleton<IGpxService, GpxService>();
+        builder.Services.AddSingleton<IBookingNotificationService, BookingNotificationService>();
 
         builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
         builder.Services.AddSingleton<IFileDownloadService, FileDownloadService>();
