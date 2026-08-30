@@ -10,7 +10,9 @@
              Title="Book">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Refresh" Command="{Binding LoadEventsCommand}" />
+        <ToolbarItem IconImageSource="icon_refresh_white.svg"
+                     Command="{Binding LoadEventsCommand}"
+                     AutomationProperties.Name="Refresh" />
     </ContentPage.ToolbarItems>
 
     <ContentPage.Resources>

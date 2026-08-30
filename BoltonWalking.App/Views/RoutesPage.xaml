@@ -25,7 +25,9 @@
     </ContentPage.Resources>
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Refresh" Command="{Binding LoadRoutesCommand}" />
+        <ToolbarItem IconImageSource="icon_refresh_white.svg"
+                     Command="{Binding LoadRoutesCommand}"
+                     AutomationProperties.Name="Refresh" />
     </ContentPage.ToolbarItems>
 
     <Grid RowDefinitions="Auto,Auto,*">
