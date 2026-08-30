@@ -35,6 +35,11 @@ public partial class RoutesViewModel : ObservableObject
     [ObservableProperty]
     private string searchText = "";
 
+    // Toggles the Routes page between the map (pins) and a scrollable list -
+    // both read from the same FilteredRoutes.
+    [ObservableProperty]
+    private bool isListView;
+
     public RoutesViewModel(IRoutesService routesService)
     {
         this.routesService = routesService;
@@ -45,6 +50,18 @@ public partial class RoutesViewModel : ObservableObject
     {
         SelectedDifficulty = difficulty;
     }
+
+    [RelayCommand]
+    private void ToggleView()
+    {
+        IsListView = !IsListView;
+    }
+
+    // FilteredRoutes is a plain computed property (not [ObservableProperty]),
+    // so anything bound to it - the list view's CollectionView - needs an
+    // explicit nudge whenever an input to the filter changes.
+    partial void OnSelectedDifficultyChanged(string value) => OnPropertyChanged(nameof(FilteredRoutes));
+    partial void OnSearchTextChanged(string value) => OnPropertyChanged(nameof(FilteredRoutes));
 
     public IEnumerable<WalkingRoute> FilteredRoutes
     {
@@ -81,6 +98,7 @@ public partial class RoutesViewModel : ObservableObject
             Routes.Clear();
             foreach (var item in items)
                 Routes.Add(item);
+            OnPropertyChanged(nameof(FilteredRoutes));
         }
         catch (Exception ex)
         {

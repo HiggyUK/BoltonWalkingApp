@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
              xmlns:vm="clr-namespace:BoltonWalking.App.ViewModels"
+             xmlns:models="clr-namespace:BoltonWalking.App.Models"
              xmlns:converters="clr-namespace:BoltonWalking.App.Converters"
              x:DataType="vm:RoutesViewModel"
              x:Class="BoltonWalking.App.Views.RoutesPage"
@@ -10,6 +11,10 @@
 
     <ContentPage.Resources>
         <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+        <converters:ListViewToggleIconConverter x:Key="ListViewToggleIconConverter" />
+        <converters:ListViewToggleDescriptionConverter x:Key="ListViewToggleDescriptionConverter" />
+        <converters:DifficultyToColorConverter x:Key="DifficultyToColorConverter" />
 
         <Style x:Key="FilterChipBase" TargetType="Button">
             <Setter Property="FontSize" Value="13" />
@@ -25,10 +30,25 @@
 
     <Grid RowDefinitions="Auto,Auto,*">
 
-        <SearchBar Grid.Row="0"
-                   Placeholder="Search routes by name or venue"
-                   Text="{Binding SearchText}"
-                   BackgroundColor="White" />
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" BackgroundColor="White">
+            <SearchBar Grid.Column="0"
+                       Placeholder="Search routes by name or venue"
+                       Text="{Binding SearchText}"
+                       BackgroundColor="White" />
+
+            <Button Grid.Column="1"
+                    ImageSource="{Binding IsListView, Converter={StaticResource ListViewToggleIconConverter}}"
+                    SemanticProperties.Description="{Binding IsListView, Converter={StaticResource ListViewToggleDescriptionConverter}}"
+                    Command="{Binding ToggleViewCommand}"
+                    Margin="0,0,12,0"
+                    Padding="10"
+                    WidthRequest="42"
+                    HeightRequest="42"
+                    CornerRadius="21"
+                    BackgroundColor="White"
+                    BorderColor="{DynamicResource Primary}"
+                    BorderWidth="1" />
+        </Grid>
 
         <!-- Difficulty filter chips - narrows which pins BuildPins() shows. -->
         <ScrollView Grid.Row="1" Orientation="Horizontal" BackgroundColor="White">
@@ -86,7 +106,45 @@
         <Grid Grid.Row="2">
 
             <maps:Map x:Name="RoutesMap"
-                      IsShowingUser="True" />
+                      IsShowingUser="True"
+                      IsVisible="{Binding IsListView, Converter={StaticResource InvertedBoolConverter}}" />
+
+            <CollectionView IsVisible="{Binding IsListView}"
+                             ItemsSource="{Binding FilteredRoutes}"
+                             BackgroundColor="White"
+                             SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:WalkingRoute">
+                        <Grid Padding="16,0,0,0" ColumnDefinitions="12,*" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnRouteRowTapped" />
+                            </Grid.GestureRecognizers>
+
+                            <Ellipse Grid.Row="0" Grid.Column="0"
+                                     WidthRequest="12" HeightRequest="12"
+                                     VerticalOptions="Start"
+                                     Margin="0,16,0,0"
+                                     Fill="{Binding Difficulty, Converter={StaticResource DifficultyToColorConverter}}" />
+
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding Name}"
+                                   FontAttributes="Bold"
+                                   FontSize="16"
+                                   Margin="0,12,16,0" />
+
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding ShortDescription}"
+                                   FontSize="13"
+                                   Margin="0,0,16,12"
+                                   TextColor="{DynamicResource TextMuted}" />
+
+                            <BoxView Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                     HeightRequest="1"
+                                     BackgroundColor="#E0E0E0" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
 
             <ActivityIndicator Grid.Row="0"
                                 IsRunning="{Binding IsBusy}"

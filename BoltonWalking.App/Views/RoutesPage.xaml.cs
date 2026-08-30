@@ -145,4 +145,11 @@ public partial class RoutesPage : ContentPage
 
         await Shell.Current.GoToAsync($"{nameof(RouteDetailsPage)}?id={id}");
     }
+
+    private async void OnRouteRowTapped(object? sender, TappedEventArgs e)
+    {
+        if (sender is not Grid { BindingContext: WalkingRoute route }) return;
+
+        await Shell.Current.GoToAsync($"{nameof(RouteDetailsPage)}?id={route.Id}");
+    }
 }

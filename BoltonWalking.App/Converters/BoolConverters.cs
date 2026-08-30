@@ -43,6 +43,26 @@ public class IntToInverseBoolConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
+/// <summary>Icons the Routes page map/list toggle with the view it switches TO, not the one you're in.</summary>
+public class ListViewToggleIconConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is true ? "icon_map.svg" : "icon_list.svg";
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>Screen-reader label for the icon-only Routes page map/list toggle.</summary>
+public class ListViewToggleDescriptionConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is true ? "Switch to map view" : "Switch to list view";
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
 /// <summary>Maps a route's difficulty tier to a badge colour - green/orange/red, matching the map pins.</summary>
 public class DifficultyToColorConverter : IValueConverter
 {
