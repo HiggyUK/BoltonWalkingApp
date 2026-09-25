@@ -139,9 +139,13 @@
                                          x:Reference, since inside this DataTemplate the implicit
                                          BindingContext is the DownloadableFile, not the view model. -->
                                     <Button Grid.Column="1"
-                                            Text="Download"
-                                            Padding="10,6"
-                                            Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.DownloadFileCommand}"
+                                            ImageSource="icon_open_white.svg"
+                                            SemanticProperties.Description="Open"
+                                            Padding="10"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            CornerRadius="20"
+                                            Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.OpenFileCommand}"
                                             CommandParameter="{Binding .}" />
                                 </Grid>
                             </Border>

@@ -84,17 +84,17 @@ public partial class RouteDetailsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task DownloadFileAsync(DownloadableFile file)
+    private async Task OpenFileAsync(DownloadableFile file)
     {
         try
         {
-            StatusMessage = $"Downloading {file.FileName}...";
-            await fileDownloadService.DownloadAndSaveAsync(file.Url, file.FileName);
-            StatusMessage = $"Saved {file.FileName}.";
+            StatusMessage = $"Opening {file.FileName}...";
+            await fileDownloadService.OpenOrSaveAsync(file.Url, file.FileName);
+            StatusMessage = null;
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Couldn't download {file.FileName}: {ex.Message}";
+            StatusMessage = $"Couldn't open {file.FileName}: {ex.Message}";
         }
     }
 
