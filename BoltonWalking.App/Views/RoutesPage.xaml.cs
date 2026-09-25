@@ -157,4 +157,9 @@ public partial class RoutesPage : ContentPage
 
         await Shell.Current.GoToAsync($"{nameof(RouteDetailsPage)}?id={route.Id}");
     }
+
+    private async void OnSubmitRouteClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(SubmitRoutePage));
+    }
 }

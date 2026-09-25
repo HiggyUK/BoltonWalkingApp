@@ -32,7 +32,7 @@
 
     <Grid RowDefinitions="Auto,Auto,*">
 
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" BackgroundColor="White">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" BackgroundColor="White">
             <SearchBar x:Name="RoutesSearchBar"
                        Grid.Column="0"
                        Placeholder="Search routes by name or venue"
@@ -43,6 +43,19 @@
                     ImageSource="{Binding IsListView, Converter={StaticResource ListViewToggleIconConverter}}"
                     SemanticProperties.Description="{Binding IsListView, Converter={StaticResource ListViewToggleDescriptionConverter}}"
                     Command="{Binding ToggleViewCommand}"
+                    Margin="0,0,8,0"
+                    Padding="10"
+                    WidthRequest="42"
+                    HeightRequest="42"
+                    CornerRadius="21"
+                    BackgroundColor="White"
+                    BorderColor="{DynamicResource Primary}"
+                    BorderWidth="1" />
+
+            <Button Grid.Column="2"
+                    ImageSource="icon_add_route.svg"
+                    SemanticProperties.Description="Submit a route"
+                    Clicked="OnSubmitRouteClicked"
                     Margin="0,0,12,0"
                     Padding="10"
                     WidthRequest="42"

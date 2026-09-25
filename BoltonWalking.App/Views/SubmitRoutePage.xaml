@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BoltonWalking.App.ViewModels"
+             xmlns:converters="clr-namespace:BoltonWalking.App.Converters"
+             x:DataType="vm:SubmitRouteViewModel"
+             x:Class="BoltonWalking.App.Views.SubmitRoutePage"
+             Title="Submit a Route">
+
+    <ContentPage.Resources>
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14">
+
+            <Label Text="Know a great walk we're missing? Fill in what you can below and the committee will review it."
+                   FontSize="14"
+                   TextColor="{DynamicResource TextMuted}" />
+
+            <Label Text="Route name" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Entry Text="{Binding RouteName}" Placeholder="e.g. Rivington Pike Circular" />
+
+            <Label Text="Starting venue" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Entry Text="{Binding Venue}" Placeholder="e.g. The Black Bull, Edgworth" />
+
+            <Label Text="Difficulty" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Picker ItemsSource="{Binding DifficultyOptions}" SelectedItem="{Binding Difficulty}" />
+
+            <Label Text="Distance / ascent / duration" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Entry Text="{Binding ShortDescription}" Placeholder="e.g. 7km - 100m ascent - 2 hours" />
+
+            <Label Text="Terrain / other notes" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Editor Text="{Binding TerrainNotes}" HeightRequest="80" />
+
+            <BoxView HeightRequest="1" BackgroundColor="#E0E0E0" Margin="0,10" />
+
+            <Label Text="GPX track" FontAttributes="Bold" />
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <Button Grid.Column="0"
+                        Text="Pick GPX file"
+                        BackgroundColor="Transparent"
+                        TextColor="{DynamicResource Primary}"
+                        BorderColor="{DynamicResource Primary}"
+                        BorderWidth="1"
+                        Command="{Binding PickGpxCommand}" />
+                <Label Grid.Column="1"
+                       Text="{Binding GpxFileName}"
+                       VerticalOptions="Center"
+                       LineBreakMode="TailTruncation" />
+            </Grid>
+
+            <Label Text="...or paste a route URL (Google Maps, etc.) if you don't have a GPX file"
+                   FontSize="13"
+                   TextColor="{DynamicResource TextMuted}"
+                   Margin="0,10,0,0" />
+            <Entry Text="{Binding RouteUrl}" Placeholder="https://..." Keyboard="Url" />
+
+            <BoxView HeightRequest="1" BackgroundColor="#E0E0E0" Margin="0,10" />
+
+            <Label Text="Your name (optional)" FontAttributes="Bold" />
+            <Entry Text="{Binding SubmitterName}" />
+
+            <Label Text="Your email (optional, in case we have questions)" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Entry Text="{Binding SubmitterEmail}" Keyboard="Email" />
+
+            <Label Text="{Binding StatusMessage}"
+                   TextColor="{DynamicResource Primary}"
+                   FontSize="13"
+                   Margin="0,10,0,0"
+                   IsVisible="{Binding StatusMessage, Converter={StaticResource StringToBoolConverter}}" />
+
+            <Button Text="Submit"
+                    Margin="0,10,0,0"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                    Command="{Binding SubmitCommand}" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{DynamicResource Primary}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

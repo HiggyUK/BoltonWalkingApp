@@ -1,12 +1,15 @@
+using System.Text;
 using System.Text.Json;
 
 namespace BoltonWalking.App.Services;
 
 /// <summary>
-/// Minimal read-only client for the Firestore REST API - no Firebase SDK
-/// dependency, just HttpClient + JSON. Access is governed entirely by the
-/// project's Firestore security rules (public read, no write), not by an
-/// API key, so nothing sensitive needs to ship in the app.
+/// Minimal client for the Firestore REST API - no Firebase SDK dependency,
+/// just HttpClient + JSON. Access is governed entirely by the project's
+/// Firestore security rules, not by an API key, so nothing sensitive needs
+/// to ship in the app. Mostly read-only (public read, no write) except for
+/// collections whose rules explicitly allow an unauthenticated create, such
+/// as "route-submissions" - see CreateDocumentAsync.
 /// </summary>
 public class FirestoreClient
 {
@@ -39,6 +42,37 @@ public class FirestoreClient
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Creates a new document with an auto-generated id in <paramref name="collection"/>.
+    /// Only usable against collections whose Firestore rules allow public
+    /// create - values are strings/enums/nullables only (no arrays/maps
+    /// needed by the one caller today, route submissions).
+    /// </summary>
+    public async Task CreateDocumentAsync(string collection, IReadOnlyDictionary<string, string?> fields)
+    {
+        var fieldsJson = new StringBuilder("{");
+        var first = true;
+        foreach (var (key, value) in fields)
+        {
+            if (value is null) continue;
+
+            if (!first) fieldsJson.Append(',');
+            first = false;
+
+            fieldsJson.Append(JsonSerializer.Serialize(key));
+            fieldsJson.Append(":{\"stringValue\":");
+            fieldsJson.Append(JsonSerializer.Serialize(value));
+            fieldsJson.Append('}');
+        }
+        fieldsJson.Append('}');
+
+        var body = $"{{\"fields\":{fieldsJson}}}";
+        using var content = new StringContent(body, Encoding.UTF8, "application/json");
+
+        using var response = await httpClient.PostAsync($"{BaseUrl}/{collection}", content);
+        response.EnsureSuccessStatusCode();
     }
 
     public static string GetString(JsonElement fields, string key, string fallback = "")

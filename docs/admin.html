@@ -29,6 +29,7 @@
   .tabs { display: flex; gap: 8px; margin-bottom: 8px; }
   .tabs button { margin-top: 0; flex: 1; background: white; color: var(--primary); border: 1px solid var(--primary); }
   .tabs button.active { background: var(--primary); color: white; }
+  .readout { padding: 4px 0 10px; font-size: 14px; white-space: pre-wrap; }
 </style>
 </head>
 <body>
@@ -49,6 +50,7 @@
   <div class="tabs">
     <button type="button" id="tab-routes-btn" class="active">Routes</button>
     <button type="button" id="tab-events-btn">Events</button>
+    <button type="button" id="tab-submissions-btn">Submissions</button>
   </div>
 
   <div id="routes-tab">
@@ -174,6 +176,42 @@
     <button class="secondary" id="delete-event-btn" style="display:none;">Delete this event</button>
   </div>
 
+  <div id="submissions-tab" style="display:none;">
+    <div class="card">
+      <label>Pending submissions</label>
+      <div class="hint">Member-submitted routes from the app, awaiting review.</div>
+      <select id="submission-picker">
+        <option value="">-- Select a submission --</option>
+      </select>
+    </div>
+
+    <div class="card" id="submission-details" style="display:none;">
+      <label>Route name</label>
+      <div class="readout" id="sub-name"></div>
+
+      <label>Starting venue</label>
+      <div class="readout" id="sub-venue"></div>
+
+      <label>Difficulty</label>
+      <div class="readout" id="sub-difficulty"></div>
+
+      <label>Distance / ascent / duration</label>
+      <div class="readout" id="sub-shortDescription"></div>
+
+      <label>Terrain / other notes</label>
+      <div class="readout" id="sub-terrainNotes"></div>
+
+      <label>GPX file / route link</label>
+      <div class="readout" id="sub-gpx"></div>
+
+      <label>Submitted by</label>
+      <div class="readout" id="sub-submitter"></div>
+
+      <button type="button" id="copy-submission-btn">Copy to new route</button>
+      <button type="button" class="secondary" id="delete-submission-btn">Delete submission</button>
+    </div>
+  </div>
+
   <button class="secondary" id="logout-btn">Sign out</button>
   <div id="status"></div>
 </div>
@@ -212,28 +250,26 @@
       loadRouteList();
       loadEventRouteDropdown();
       loadEventList();
+      loadSubmissionList();
     }
   });
 
   // --- Tabs ---
   const routesTab = document.getElementById('routes-tab');
   const eventsTab = document.getElementById('events-tab');
+  const submissionsTab = document.getElementById('submissions-tab');
   const tabRoutesBtn = document.getElementById('tab-routes-btn');
   const tabEventsBtn = document.getElementById('tab-events-btn');
+  const tabSubmissionsBtn = document.getElementById('tab-submissions-btn');
 
-  tabRoutesBtn.addEventListener('click', () => {
-    routesTab.style.display = 'block';
-    eventsTab.style.display = 'none';
-    tabRoutesBtn.classList.add('active');
-    tabEventsBtn.classList.remove('active');
-  });
+  function showTab(tab, btn) {
+    [routesTab, eventsTab, submissionsTab].forEach(t => t.style.display = t === tab ? 'block' : 'none');
+    [tabRoutesBtn, tabEventsBtn, tabSubmissionsBtn].forEach(b => b.classList.toggle('active', b === btn));
+  }
 
-  tabEventsBtn.addEventListener('click', () => {
-    routesTab.style.display = 'none';
-    eventsTab.style.display = 'block';
-    tabEventsBtn.classList.add('active');
-    tabRoutesBtn.classList.remove('active');
-  });
+  tabRoutesBtn.addEventListener('click', () => showTab(routesTab, tabRoutesBtn));
+  tabEventsBtn.addEventListener('click', () => showTab(eventsTab, tabEventsBtn));
+  tabSubmissionsBtn.addEventListener('click', () => showTab(submissionsTab, tabSubmissionsBtn));
 
   async function loadRouteList() {
     const snapshot = await db.collection('routes').get();
@@ -643,6 +679,104 @@
       showStatus('Failed to save: ' + e.message, true);
     } finally {
       saveBtn.disabled = false;
+    }
+  });
+
+  // --- Submissions (member-proposed routes awaiting review) ---
+  const submissionPicker = document.getElementById('submission-picker');
+  const submissionDetails = document.getElementById('submission-details');
+  let currentSubmissionId = null;
+  let currentSubmission = null;
+
+  async function loadSubmissionList() {
+    const snapshot = await db.collection('route-submissions').get();
+    const submissions = [];
+    snapshot.forEach(doc => submissions.push({ id: doc.id, name: doc.data().name || '(unnamed)' }));
+
+    submissionPicker.innerHTML = '<option value="">-- Select a submission --</option>';
+    submissions.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name;
+      submissionPicker.appendChild(opt);
+    });
+  }
+
+  submissionPicker.addEventListener('change', async () => {
+    const id = submissionPicker.value;
+    if (!id) {
+      submissionDetails.style.display = 'none';
+      currentSubmissionId = null;
+      currentSubmission = null;
+      return;
+    }
+    const doc = await db.collection('route-submissions').doc(id).get();
+    if (!doc.exists) { showStatus('Submission not found - it may have already been handled.', true); return; }
+    currentSubmissionId = id;
+    currentSubmission = doc.data();
+    renderSubmissionDetails(currentSubmission);
+    submissionDetails.style.display = 'block';
+  });
+
+  function renderSubmissionDetails(sub) {
+    document.getElementById('sub-name').textContent = sub.name || '';
+    document.getElementById('sub-venue').textContent = sub.venue || '';
+    document.getElementById('sub-difficulty').textContent = sub.difficulty || '';
+    document.getElementById('sub-shortDescription').textContent = sub.shortDescription || '(none provided)';
+    document.getElementById('sub-terrainNotes').textContent = sub.terrainNotes || '(none provided)';
+
+    const gpxEl = document.getElementById('sub-gpx');
+    gpxEl.innerHTML = '';
+    if (sub.gpxContentBase64) {
+      const a = document.createElement('a');
+      a.href = `data:application/gpx+xml;base64,${sub.gpxContentBase64}`;
+      a.download = sub.gpxFileName || 'route.gpx';
+      a.textContent = `Download ${sub.gpxFileName || 'GPX file'}`;
+      gpxEl.appendChild(a);
+    } else if (sub.routeUrl) {
+      const a = document.createElement('a');
+      a.href = sub.routeUrl;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = sub.routeUrl;
+      gpxEl.appendChild(a);
+    } else {
+      gpxEl.textContent = '(none provided)';
+    }
+
+    const submitterBits = [sub.submitterName, sub.submitterEmail].filter(Boolean);
+    document.getElementById('sub-submitter').textContent = submitterBits.length ? submitterBits.join(' - ') : '(not given)';
+  }
+
+  // Pre-fills the Routes tab's "new route" form from this submission and
+  // switches there - reuses the existing Save flow untouched so the admin
+  // still fills in coordinates/address/files and reviews before it's live.
+  document.getElementById('copy-submission-btn').addEventListener('click', () => {
+    if (!currentSubmission) return;
+    clearForm();
+    document.getElementById('name').value = currentSubmission.name || '';
+    document.getElementById('venue').value = currentSubmission.venue || '';
+    document.getElementById('difficulty').value = currentSubmission.difficulty || 'Moderate';
+    document.getElementById('stats').value = currentSubmission.shortDescription || '';
+    document.getElementById('shortDescription').value = currentSubmission.shortDescription || '';
+    document.getElementById('terrainNotes').value = currentSubmission.terrainNotes || '';
+
+    showTab(routesTab, tabRoutesBtn);
+    showStatus('Copied from submission - fill in the remaining fields (coordinates, address, GPX/RA files) then Save.', false);
+  });
+
+  document.getElementById('delete-submission-btn').addEventListener('click', async () => {
+    if (!currentSubmissionId) return;
+    if (!confirm('Delete this submission? This can\'t be undone.')) return;
+    try {
+      await db.collection('route-submissions').doc(currentSubmissionId).delete();
+      showStatus('Submission deleted.', false);
+      submissionDetails.style.display = 'none';
+      currentSubmissionId = null;
+      currentSubmission = null;
+      await loadSubmissionList();
+    } catch (e) {
+      showStatus('Failed to delete: ' + e.message, true);
     }
   });
 </script>
