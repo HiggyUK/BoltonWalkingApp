@@ -111,6 +111,11 @@ public partial class RoutesPage : ContentPage
             {
                 // Suppress the native callout - our own popup shows instead.
                 e.HideInfoWindow = true;
+
+                // Otherwise the keyboard (left open from typing a search) covers
+                // the popup this is about to show.
+                RoutesSearchBar.Unfocus();
+
                 viewModel.PinTappedCommand.Execute(route);
             };
 

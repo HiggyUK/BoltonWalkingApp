@@ -33,7 +33,8 @@
     <Grid RowDefinitions="Auto,Auto,*">
 
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" BackgroundColor="White">
-            <SearchBar Grid.Column="0"
+            <SearchBar x:Name="RoutesSearchBar"
+                       Grid.Column="0"
                        Placeholder="Search routes by name or venue"
                        Text="{Binding SearchText}"
                        BackgroundColor="White" />
