@@ -9,6 +9,6 @@ public partial class FaqPage : ContentPage
 
     private async void OnBookClicked(object? sender, EventArgs e)
     {
-        await Launcher.Default.OpenAsync(ClubInfo.BookingUrl);
+        await Shell.Current.GoToAsync("//BookPage");
     }
 }
