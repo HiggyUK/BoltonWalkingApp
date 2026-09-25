@@ -111,23 +111,32 @@
   </div>
 
   <div class="card">
-    <label>Photo URLs</label>
-    <div class="hint">Full image URLs (e.g. from the club website's photo gallery).</div>
+    <label>Photos</label>
+    <div class="hint">Upload photos directly, or paste a URL if you already have one hosted elsewhere.</div>
     <div id="photo-list"></div>
     <div class="row">
-      <input type="text" id="photo-input" placeholder="https://...">
+      <input type="file" id="photo-file-input" accept="image/*" multiple>
+      <button type="button" id="upload-photo-btn">Upload</button>
+    </div>
+    <div class="row">
+      <input type="text" id="photo-input" placeholder="...or paste a URL">
       <button type="button" id="add-photo-btn">Add</button>
     </div>
   </div>
 
   <div class="card">
     <label>Downloadable files (GPX / risk assessment PDF)</label>
+    <div class="hint">Upload a file directly - this fills in the name/URL below, so you just need to add a description and click Add.</div>
     <div id="file-list"></div>
+    <div class="row">
+      <input type="file" id="file-file-input" accept=".gpx,.pdf">
+      <button type="button" id="upload-file-btn">Upload</button>
+    </div>
     <div class="row">
       <input type="text" id="file-name-input" placeholder="File name, e.g. my-route.gpx">
     </div>
     <div class="row">
-      <input type="text" id="file-url-input" placeholder="File URL">
+      <input type="text" id="file-url-input" placeholder="...or paste a URL">
     </div>
     <div class="row">
       <input type="text" id="file-desc-input" placeholder="Description, e.g. GPX track">
@@ -219,6 +228,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
   // Public Firebase web config - not secret, safe to embed (access is governed
   // by Firestore security rules + Auth, not by hiding this config).
@@ -229,6 +239,16 @@
 
   const auth = firebase.auth();
   const db = firebase.firestore();
+  const storage = firebase.storage();
+
+  // Uploads a File to Storage under a collision-safe name and resolves to
+  // its public download URL. Shared by the photo and GPX/PDF upload buttons.
+  async function uploadToStorage(file) {
+    const path = `route-files/${Date.now()}_${file.name}`;
+    const ref = storage.ref().child(path);
+    await ref.put(file);
+    return ref.getDownloadURL();
+  }
 
   const loginSection = document.getElementById('login-section');
   const appSection = document.getElementById('app-section');
@@ -396,6 +416,29 @@
     }
   });
 
+  document.getElementById('upload-photo-btn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('photo-file-input');
+    const uploadBtn = document.getElementById('upload-photo-btn');
+    const chosenFiles = Array.from(fileInput.files || []);
+    if (chosenFiles.length === 0) { showStatus('Choose one or more photos first.', true); return; }
+
+    uploadBtn.disabled = true;
+    try {
+      for (const file of chosenFiles) {
+        showStatus(`Uploading ${file.name}...`, false);
+        const url = await uploadToStorage(file);
+        photoUrls.push(url);
+        renderPhotoList();
+      }
+      fileInput.value = '';
+      showStatus(`Uploaded ${chosenFiles.length} photo(s).`, false);
+    } catch (e) {
+      showStatus('Upload failed: ' + e.message, true);
+    } finally {
+      uploadBtn.disabled = false;
+    }
+  });
+
   // --- Files (GPX/PDF) ---
   const files = [];
   const fileList = document.getElementById('file-list');
@@ -426,6 +469,29 @@
       document.getElementById('file-url-input').value = '';
       document.getElementById('file-desc-input').value = '';
       renderFileList();
+    }
+  });
+
+  // Uploads and fills in name/URL, but doesn't add it to the list yet - the
+  // admin still types a description and clicks the existing Add button.
+  document.getElementById('upload-file-btn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('file-file-input');
+    const uploadBtn = document.getElementById('upload-file-btn');
+    const file = (fileInput.files || [])[0];
+    if (!file) { showStatus('Choose a GPX or PDF file first.', true); return; }
+
+    uploadBtn.disabled = true;
+    try {
+      showStatus(`Uploading ${file.name}...`, false);
+      const url = await uploadToStorage(file);
+      document.getElementById('file-name-input').value = file.name;
+      document.getElementById('file-url-input').value = url;
+      fileInput.value = '';
+      showStatus(`Uploaded ${file.name} - add a description and click Add.`, false);
+    } catch (e) {
+      showStatus('Upload failed: ' + e.message, true);
+    } finally {
+      uploadBtn.disabled = false;
     }
   });
 
