@@ -32,7 +32,20 @@ function Get-IdToken {
         return $response.idToken
     }
     catch {
-        Write-Error "Sign-in failed: $($_.Exception.Message)"
+        # Invoke-RestMethod's exception message is just the HTTP status line
+        # ("(400) Bad Request") - the actual reason (wrong password, unknown
+        # email, disabled account, ...) is in the response body, which we
+        # have to read separately.
+        $reason = $_.Exception.Message
+        if ($_.Exception.Response) {
+            try {
+                $stream = $_.Exception.Response.GetResponseStream()
+                $stream.Position = 0
+                $errorBody = (New-Object System.IO.StreamReader($stream)).ReadToEnd() | ConvertFrom-Json
+                if ($errorBody.error.message) { $reason = $errorBody.error.message }
+            } catch { }
+        }
+        Write-Error "Sign-in failed: $reason"
         exit 1
     }
 }
