@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BoltonWalking.App.Views.FeedbackPage"
+             Title="Feedback">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14">
+
+            <Label Text="We'd love to hear from you"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Secondary}"
+                   Margin="0,10,0,0" />
+            <Label Text="Pick a category below to get started."
+                   FontSize="14"
+                   TextColor="{DynamicResource TextMuted}"
+                   Margin="0,0,0,10" />
+
+            <Border BackgroundColor="{DynamicResource Primary}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="18">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnGeneralTapped" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                    <Label Grid.Column="0" Text="&#128172;" FontSize="26" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="General Feedback" FontSize="17" FontAttributes="Bold" TextColor="White" />
+                        <Label Text="Anything you'd like to tell the committee" FontSize="12" TextColor="#FFE5E5" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="&#8250;" FontSize="24" TextColor="White" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource Secondary}"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="18">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnAppTapped" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                    <Label Grid.Column="0" Text="&#128241;" FontSize="26" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="App Feedback" FontSize="17" FontAttributes="Bold" TextColor="White" />
+                        <Label Text="Report a bug or suggest an improvement" FontSize="12" TextColor="#CCCCCC" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="&#8250;" FontSize="24" TextColor="White" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                    Stroke="{DynamicResource Primary}"
+                    StrokeThickness="1.5"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="18">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRouteWalkTapped" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                    <Label Grid.Column="0" Text="&#129406;" FontSize="26" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="Route/Walk Feedback" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource Secondary}" />
+                        <Label Text="Tell us how a past walk went" FontSize="12" TextColor="{DynamicResource TextMuted}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="&#8250;" FontSize="24" TextColor="{DynamicResource Primary}" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <BoxView HeightRequest="1" BackgroundColor="#E0E0E0" Margin="0,10" />
+
+            <Border BackgroundColor="White"
+                    Stroke="{DynamicResource Primary}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="18">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnSubmitRouteTapped" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                    <Label Grid.Column="0" Text="&#128506;" FontSize="26" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="Submit a Route" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource Secondary}" />
+                        <Label Text="Know a great walk we're missing?" FontSize="12" TextColor="{DynamicResource TextMuted}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="&#8250;" FontSize="24" TextColor="{DynamicResource Primary}" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

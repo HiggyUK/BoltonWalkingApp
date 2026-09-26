@@ -84,6 +84,11 @@ public class FirestoreClient
             return $"{{\"arrayValue\":{{\"values\":[{values}]}}}}";
         }
 
+        if (value is int or double)
+        {
+            return $"{{\"doubleValue\":{Convert.ToDouble(value)}}}";
+        }
+
         return $"{{\"stringValue\":{JsonSerializer.Serialize(value.ToString())}}}";
     }
 

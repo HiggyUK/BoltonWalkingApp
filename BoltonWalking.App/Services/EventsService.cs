@@ -16,15 +16,29 @@ public class EventsService : IEventsService
 
     public async Task<List<EventItem>> GetUpcomingEventsAsync()
     {
+        var events = await GetAllEventsAsync();
+        return events
+            .Where(e => e.EndDateTime >= DateTime.Now)
+            .OrderBy(e => e.StartDateTime)
+            .ToList();
+    }
+
+    public async Task<List<EventItem>> GetPastEventsAsync()
+    {
+        var events = await GetAllEventsAsync();
+        return events
+            .Where(e => e.EndDateTime < DateTime.Now)
+            .OrderByDescending(e => e.StartDateTime)
+            .ToList();
+    }
+
+    private async Task<List<EventItem>> GetAllEventsAsync()
+    {
         var routesTask = routesService.GetRoutesAsync();
         var documents = await firestoreClient.GetCollectionAsync("events");
         var routesById = (await routesTask).ToDictionary(r => r.Id);
 
-        return documents
-            .Select(doc => MapEvent(doc, routesById))
-            .Where(e => e.EndDateTime >= DateTime.Now)
-            .OrderBy(e => e.StartDateTime)
-            .ToList();
+        return documents.Select(doc => MapEvent(doc, routesById)).ToList();
     }
 
     private static EventItem MapEvent((string Id, JsonElement Fields) document, Dictionary<int, WalkingRoute> routesById)

@@ -17,6 +17,10 @@
                       Icon="icon_routes.svg"
                       ContentTemplate="{DataTemplate views:RoutesPage}"
                       Route="RoutesPage" />
+        <ShellContent Title="Feedback"
+                      Icon="icon_feedback.svg"
+                      ContentTemplate="{DataTemplate views:FeedbackPage}"
+                      Route="FeedbackPage" />
         <ShellContent Title="More"
                       Icon="icon_more.svg"
                       ContentTemplate="{DataTemplate views:MorePage}"

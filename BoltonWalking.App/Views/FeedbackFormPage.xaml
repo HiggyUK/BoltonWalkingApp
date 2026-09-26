@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BoltonWalking.App.ViewModels"
+             xmlns:converters="clr-namespace:BoltonWalking.App.Converters"
+             x:DataType="vm:FeedbackFormViewModel"
+             x:Class="BoltonWalking.App.Views.FeedbackFormPage"
+             Title="{Binding Title}">
+
+    <ContentPage.Resources>
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+
+        <Style x:Key="CardLabel" TargetType="Label">
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextColor" Value="{DynamicResource Secondary}" />
+        </Style>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="{DynamicResource SurfaceMuted}" />
+            <Setter Property="Stroke" Value="Transparent" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+            <Setter Property="Padding" Value="18" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Your details" Style="{StaticResource CardLabel}" />
+                    <Entry Text="{Binding SubmitterName}" Placeholder="Your name" />
+                    <Entry Text="{Binding SubmitterEmail}" Placeholder="Your email" Keyboard="Email" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Route/Walk feedback only -->
+            <Border Style="{StaticResource Card}" IsVisible="{Binding IsRouteWalk}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="About the walk" Style="{StaticResource CardLabel}" />
+
+                    <Label Text="Which walk is this about?" FontSize="13" TextColor="{DynamicResource TextMuted}" />
+                    <Picker ItemsSource="{Binding PastEventLabels}" SelectedIndex="{Binding SelectedEventIndex}" BackgroundColor="White" />
+
+                    <Label Text="How did you find this walk?" FontSize="13" TextColor="{DynamicResource TextMuted}" Margin="0,6,0,0" />
+                    <Entry Text="{Binding WalkQuality}" BackgroundColor="White" />
+
+                    <Label Text="How did you find the organisation of the walk?" FontSize="13" TextColor="{DynamicResource TextMuted}" Margin="0,6,0,0" />
+                    <Entry Text="{Binding WalkOrganisation}" BackgroundColor="White" />
+
+                    <Label Text="How did you find booking the walk?" FontSize="13" TextColor="{DynamicResource TextMuted}" Margin="0,6,0,0" />
+                    <Entry Text="{Binding BookingExperience}" BackgroundColor="White" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- App feedback only -->
+            <Border Style="{StaticResource Card}" IsVisible="{Binding IsApp}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="About the app" Style="{StaticResource CardLabel}" />
+                    <Label Text="What's this about?" FontSize="13" TextColor="{DynamicResource TextMuted}" />
+                    <Picker ItemsSource="{Binding AppFeedbackTypes}" SelectedItem="{Binding AppFeedbackType}" BackgroundColor="White" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Rating &amp; comments" Style="{StaticResource CardLabel}" />
+
+                    <Label Text="1 = Poor, 3 = Average, 5 = Excellent (optional)" FontSize="12" TextColor="{DynamicResource TextMuted}" />
+                    <Picker ItemsSource="{Binding RatingOptions}" SelectedItem="{Binding Rating}" BackgroundColor="White" />
+
+                    <Label Text="Comments" FontSize="13" TextColor="{DynamicResource TextMuted}" Margin="0,6,0,0" />
+                    <Editor Text="{Binding Comments}" HeightRequest="100" BackgroundColor="White" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="{Binding StatusMessage}"
+                   TextColor="{DynamicResource Primary}"
+                   FontSize="13"
+                   IsVisible="{Binding StatusMessage, Converter={StaticResource StringToBoolConverter}}" />
+
+            <Button Text="Submit"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                    Command="{Binding SubmitCommand}" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{DynamicResource Primary}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

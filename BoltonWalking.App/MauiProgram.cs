@@ -63,6 +63,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IGpxService, GpxService>();
         builder.Services.AddSingleton<IBookingNotificationService, BookingNotificationService>();
         builder.Services.AddSingleton<IRouteSubmissionService, RouteSubmissionService>();
+        builder.Services.AddSingleton<IFeedbackService, FeedbackService>();
 
         builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
         builder.Services.AddSingleton<IFileDownloadService, FileDownloadService>();
@@ -72,12 +73,15 @@ public static class MauiProgram
         builder.Services.AddTransient<CommitteeViewModel>();
         builder.Services.AddTransient<BookViewModel>();
         builder.Services.AddTransient<SubmitRouteViewModel>();
+        builder.Services.AddTransient<FeedbackFormViewModel>();
 
         builder.Services.AddTransient<AboutPage>();
         builder.Services.AddTransient<BookPage>();
         builder.Services.AddTransient<RoutesPage>();
         builder.Services.AddTransient<RouteDetailsPage>();
         builder.Services.AddTransient<SubmitRoutePage>();
+        builder.Services.AddTransient<FeedbackPage>();
+        builder.Services.AddTransient<FeedbackFormPage>();
         builder.Services.AddTransient<CommitteePage>();
         builder.Services.AddTransient<MorePage>();
         builder.Services.AddTransient<SafetyGuidePage>();
