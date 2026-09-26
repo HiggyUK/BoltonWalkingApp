@@ -2,29 +2,30 @@
 
 Ideas raised but not yet scheduled for implementation.
 
+## Admin HTML page
+### 1. Upload of images / GPX / Risk Assessment - Done
+Implemented: photos and downloadable files (GPX/risk assessment PDF) can
+now be uploaded directly from the admin page to Firebase Storage instead
+of requiring a URL to be pasted in first - the paste-a-URL option stays as
+a fallback. Existing Wix-hosted files were migrated to Storage via
+`tools/Migrate-BwoasFilesToStorage.ps1`.
+
+## Bookings page
+
+
+### 2. Booking Feedback
+When a booking has passed can we move to the bottom of the list and change the button to Feedback, this should open a form that asks for feedback on the work, perhaps a rating and optional comments with a number of questions, with optional recording of name and contact details
+
+Question could be (or similar)
+How did you find this walk
+How did you find the organisation of the walk
+How did you find booking the walk
+
+It should then if possible record this data in the database and send an email in the background
+
 ## Routes page
 
-### 1. Match Android pin style to iOS (name label under the pin)
-On iOS, route pins show the route name in a label underneath the marker.
-On Android, pins are bare (colour-coded teardrop only, no label) - you have
-to tap a pin to see which route it is. Bring Android in line with iOS so
-both platforms show the name under the pin.
 
-- Android: `Microsoft.Maui.Maps` pins don't support a persistent visible
-  label out of the box (only the tap-triggered info window, which
-  `RoutesPage.xaml.cs` already suppresses via `HideInfoWindow = true`).
-  Getting a permanent name label likely means either a custom
-  `MapPinHandler` mapping that swaps in a `BitmapDescriptorFactory.FromView`
-  (render a small XAML/View to a bitmap with the name text baked in,
-  similar to the existing difficulty-colour mapping in `MauiProgram.cs`),
-  or dropping to a custom marker renderer.
-- Where: `MauiProgram.cs` (`MapPinHandler.Mapper` mapping), `RoutesPage.xaml.cs` (`BuildPins()`).
-
-### 2. Map/List view toggle next to the search bar - Done
-Implemented: an icon button beside the search bar toggles between the map
-and a scrollable `CollectionView` list (difficulty dot, name, distance/stats),
-sharing the same search/difficulty filter and tapping through to the same
-route details page. See `RoutesPage.xaml`, `RoutesViewModel.cs` (`IsListView`).
 
 ## Theming
 
