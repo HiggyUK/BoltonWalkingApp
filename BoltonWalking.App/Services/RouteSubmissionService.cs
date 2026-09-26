@@ -10,15 +10,28 @@ public interface IRouteSubmissionService
 public class RouteSubmissionService : IRouteSubmissionService
 {
     private readonly FirestoreClient firestoreClient;
+    private readonly FirebaseStorageClient storageClient;
 
-    public RouteSubmissionService(FirestoreClient firestoreClient)
+    public RouteSubmissionService(FirestoreClient firestoreClient, FirebaseStorageClient storageClient)
     {
         this.firestoreClient = firestoreClient;
+        this.storageClient = storageClient;
     }
 
-    public Task SubmitAsync(RouteSubmission submission)
+    public async Task SubmitAsync(RouteSubmission submission)
     {
-        var fields = new Dictionary<string, string?>
+        // Uploaded here, at submit-time, rather than as each photo is
+        // picked - so an abandoned form never leaves orphan files in
+        // Storage; nothing is uploaded unless the whole submission goes
+        // through.
+        var photoUrls = new List<string>();
+        foreach (var photo in submission.PhotosToUpload)
+        {
+            var path = $"submission-photos/{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{photo.FileName}";
+            photoUrls.Add(await storageClient.UploadAsync(path, photo.Content, photo.ContentType));
+        }
+
+        var fields = new Dictionary<string, object?>
         {
             ["submitterName"] = submission.SubmitterName,
             ["submitterEmail"] = submission.SubmitterEmail,
@@ -30,8 +43,9 @@ public class RouteSubmissionService : IRouteSubmissionService
             ["gpxFileName"] = submission.GpxFileName,
             ["gpxContentBase64"] = submission.GpxContentBase64,
             ["routeUrl"] = submission.RouteUrl,
+            ["photoUrls"] = photoUrls.Count > 0 ? photoUrls : null,
         };
 
-        return firestoreClient.CreateDocumentAsync("route-submissions", fields);
+        await firestoreClient.CreateDocumentAsync("route-submissions", fields);
     }
 }

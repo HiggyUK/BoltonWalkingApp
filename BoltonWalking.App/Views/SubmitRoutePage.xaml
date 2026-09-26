@@ -59,6 +59,23 @@
 
             <BoxView HeightRequest="1" BackgroundColor="#E0E0E0" Margin="0,10" />
 
+            <Label Text="Photos (optional, up to 5)" FontAttributes="Bold" />
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <Button Grid.Column="0"
+                        Text="Pick photos"
+                        BackgroundColor="Transparent"
+                        TextColor="{DynamicResource Primary}"
+                        BorderColor="{DynamicResource Primary}"
+                        BorderWidth="1"
+                        Command="{Binding PickPhotosCommand}" />
+                <Label Grid.Column="1"
+                       Text="{Binding PhotoSummary}"
+                       VerticalOptions="Center"
+                       LineBreakMode="TailTruncation" />
+            </Grid>
+
+            <BoxView HeightRequest="1" BackgroundColor="#E0E0E0" Margin="0,10" />
+
             <Label Text="Your name (optional)" FontAttributes="Bold" />
             <Entry Text="{Binding SubmitterName}" />
 

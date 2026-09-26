@@ -57,6 +57,7 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<HttpClient>();
         builder.Services.AddSingleton<FirestoreClient>();
+        builder.Services.AddSingleton<FirebaseStorageClient>();
         builder.Services.AddSingleton<IRoutesService, RoutesService>();
         builder.Services.AddSingleton<IEventsService, EventsService>();
         builder.Services.AddSingleton<IGpxService, GpxService>();

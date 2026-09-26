@@ -7,9 +7,12 @@ namespace BoltonWalking.App.ViewModels;
 
 public partial class SubmitRouteViewModel : ObservableObject
 {
+    private const int MaxPhotos = 5;
+
     private readonly IRouteSubmissionService submissionService;
 
     private byte[]? gpxBytes;
+    private readonly List<PickedPhoto> pickedPhotos = new();
 
     [ObservableProperty]
     private string? submitterName;
@@ -40,6 +43,11 @@ public partial class SubmitRouteViewModel : ObservableObject
     // null until PickGpxCommand succeeds.
     [ObservableProperty]
     private string? gpxFileName;
+
+    // Summary of picked photos shown next to the "Pick photos" button, e.g.
+    // "2 photos selected" - null until at least one is picked.
+    [ObservableProperty]
+    private string? photoSummary;
 
     [ObservableProperty]
     private bool isBusy;
@@ -84,6 +92,47 @@ public partial class SubmitRouteViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task PickPhotosAsync()
+    {
+        try
+        {
+            var results = await FilePicker.Default.PickMultipleAsync(new PickOptions
+            {
+                FileTypes = FilePickerFileType.Images,
+                PickerTitle = "Pick photos"
+            });
+            if (results is null) return;
+
+            pickedPhotos.Clear();
+            foreach (var result in results.Take(MaxPhotos))
+            {
+                await using var stream = await result.OpenReadAsync();
+                using var memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+
+                pickedPhotos.Add(new PickedPhoto
+                {
+                    FileName = result.FileName,
+                    Content = memory.ToArray(),
+                    ContentType = result.ContentType ?? "image/jpeg"
+                });
+            }
+
+            PhotoSummary = pickedPhotos.Count switch
+            {
+                0 => null,
+                1 => "1 photo selected",
+                _ => $"{pickedPhotos.Count} photos selected"
+            };
+            StatusMessage = null;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Couldn't read those photos: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private async Task SubmitAsync()
     {
         if (IsBusy) return;
@@ -117,6 +166,7 @@ public partial class SubmitRouteViewModel : ObservableObject
                 GpxFileName = GpxFileName,
                 GpxContentBase64 = gpxBytes is null ? null : Convert.ToBase64String(gpxBytes),
                 RouteUrl = RouteUrl,
+                PhotosToUpload = pickedPhotos,
             };
 
             await submissionService.SubmitAsync(submission);

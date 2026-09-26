@@ -213,6 +213,9 @@
       <label>GPX file / route link</label>
       <div class="readout" id="sub-gpx"></div>
 
+      <label>Photos</label>
+      <div class="readout" id="sub-photos"></div>
+
       <label>Submitted by</label>
       <div class="readout" id="sub-submitter"></div>
 
@@ -811,6 +814,22 @@
       gpxEl.textContent = '(none provided)';
     }
 
+    const photosEl = document.getElementById('sub-photos');
+    photosEl.innerHTML = '';
+    if (sub.photoUrls && sub.photoUrls.length > 0) {
+      sub.photoUrls.forEach(url => {
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.style.display = 'block';
+        a.textContent = url;
+        photosEl.appendChild(a);
+      });
+    } else {
+      photosEl.textContent = '(none provided)';
+    }
+
     const submitterBits = [sub.submitterName, sub.submitterEmail].filter(Boolean);
     document.getElementById('sub-submitter').textContent = submitterBits.length ? submitterBits.join(' - ') : '(not given)';
   }
@@ -827,6 +846,9 @@
     document.getElementById('stats').value = currentSubmission.shortDescription || '';
     document.getElementById('shortDescription').value = currentSubmission.shortDescription || '';
     document.getElementById('terrainNotes').value = currentSubmission.terrainNotes || '';
+
+    (currentSubmission.photoUrls || []).forEach(url => photoUrls.push(url));
+    renderPhotoList();
 
     showTab(routesTab, tabRoutesBtn);
     showStatus('Copied from submission - fill in the remaining fields (coordinates, address, GPX/RA files) then Save.', false);

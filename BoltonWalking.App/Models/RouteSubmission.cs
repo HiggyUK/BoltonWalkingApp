@@ -22,4 +22,18 @@ public class RouteSubmission
     public string? GpxFileName { get; set; }
     public string? GpxContentBase64 { get; set; }
     public string? RouteUrl { get; set; }
+
+    // Set by the view model before submitting - RouteSubmissionService
+    // uploads these to Storage (under "submission-photos/") as part of
+    // SubmitAsync and writes their resulting public URLs to the document,
+    // rather than the raw bytes here.
+    public List<PickedPhoto> PhotosToUpload { get; set; } = new();
+}
+
+/// <summary>A picked-but-not-yet-uploaded photo, read into memory by the view model.</summary>
+public class PickedPhoto
+{
+    public string FileName { get; set; } = string.Empty;
+    public byte[] Content { get; set; } = Array.Empty<byte>();
+    public string ContentType { get; set; } = "image/jpeg";
 }

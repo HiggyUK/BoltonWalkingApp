@@ -47,10 +47,12 @@ public class FirestoreClient
     /// <summary>
     /// Creates a new document with an auto-generated id in <paramref name="collection"/>.
     /// Only usable against collections whose Firestore rules allow public
-    /// create - values are strings/enums/nullables only (no arrays/maps
-    /// needed by the one caller today, route submissions).
+    /// create. Each value is either a string (encoded as a Firestore
+    /// stringValue) or a List&lt;string&gt; (encoded as an arrayValue of
+    /// stringValues) - the only two shapes route submissions need; null
+    /// values are omitted entirely.
     /// </summary>
-    public async Task CreateDocumentAsync(string collection, IReadOnlyDictionary<string, string?> fields)
+    public async Task CreateDocumentAsync(string collection, IReadOnlyDictionary<string, object?> fields)
     {
         var fieldsJson = new StringBuilder("{");
         var first = true;
@@ -62,9 +64,8 @@ public class FirestoreClient
             first = false;
 
             fieldsJson.Append(JsonSerializer.Serialize(key));
-            fieldsJson.Append(":{\"stringValue\":");
-            fieldsJson.Append(JsonSerializer.Serialize(value));
-            fieldsJson.Append('}');
+            fieldsJson.Append(':');
+            fieldsJson.Append(ToFirestoreValueJson(value));
         }
         fieldsJson.Append('}');
 
@@ -73,6 +74,17 @@ public class FirestoreClient
 
         using var response = await httpClient.PostAsync($"{BaseUrl}/{collection}", content);
         response.EnsureSuccessStatusCode();
+    }
+
+    private static string ToFirestoreValueJson(object value)
+    {
+        if (value is IEnumerable<string> strings)
+        {
+            var values = string.Join(',', strings.Select(s => $"{{\"stringValue\":{JsonSerializer.Serialize(s)}}}"));
+            return $"{{\"arrayValue\":{{\"values\":[{values}]}}}}";
+        }
+
+        return $"{{\"stringValue\":{JsonSerializer.Serialize(value.ToString())}}}";
     }
 
     public static string GetString(JsonElement fields, string key, string fallback = "")
