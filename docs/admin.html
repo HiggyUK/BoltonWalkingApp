@@ -51,6 +51,7 @@
     <button type="button" id="tab-routes-btn" class="active">Routes</button>
     <button type="button" id="tab-events-btn">Events</button>
     <button type="button" id="tab-submissions-btn">Submissions</button>
+    <button type="button" id="tab-feedback-btn">Feedback</button>
   </div>
 
   <div id="routes-tab">
@@ -224,6 +225,21 @@
     </div>
   </div>
 
+  <div id="feedback-tab" style="display:none;">
+    <div class="card">
+      <label>Feedback submissions</label>
+      <div class="hint">Member feedback from the app, awaiting review.</div>
+      <select id="feedback-picker">
+        <option value="">-- Select feedback --</option>
+      </select>
+    </div>
+
+    <div class="card" id="feedback-details" style="display:none;">
+      <div id="feedback-fields"></div>
+      <button type="button" class="secondary" id="delete-feedback-btn">Delete feedback</button>
+    </div>
+  </div>
+
   <button class="secondary" id="logout-btn">Sign out</button>
   <div id="status"></div>
 </div>
@@ -275,6 +291,7 @@
       loadEventRouteDropdown();
       loadEventList();
       loadSubmissionList();
+      loadFeedbackList();
     }
   });
 
@@ -282,18 +299,21 @@
   const routesTab = document.getElementById('routes-tab');
   const eventsTab = document.getElementById('events-tab');
   const submissionsTab = document.getElementById('submissions-tab');
+  const feedbackTab = document.getElementById('feedback-tab');
   const tabRoutesBtn = document.getElementById('tab-routes-btn');
   const tabEventsBtn = document.getElementById('tab-events-btn');
   const tabSubmissionsBtn = document.getElementById('tab-submissions-btn');
+  const tabFeedbackBtn = document.getElementById('tab-feedback-btn');
 
   function showTab(tab, btn) {
-    [routesTab, eventsTab, submissionsTab].forEach(t => t.style.display = t === tab ? 'block' : 'none');
-    [tabRoutesBtn, tabEventsBtn, tabSubmissionsBtn].forEach(b => b.classList.toggle('active', b === btn));
+    [routesTab, eventsTab, submissionsTab, feedbackTab].forEach(t => t.style.display = t === tab ? 'block' : 'none');
+    [tabRoutesBtn, tabEventsBtn, tabSubmissionsBtn, tabFeedbackBtn].forEach(b => b.classList.toggle('active', b === btn));
   }
 
   tabRoutesBtn.addEventListener('click', () => showTab(routesTab, tabRoutesBtn));
   tabEventsBtn.addEventListener('click', () => showTab(eventsTab, tabEventsBtn));
   tabSubmissionsBtn.addEventListener('click', () => showTab(submissionsTab, tabSubmissionsBtn));
+  tabFeedbackBtn.addEventListener('click', () => showTab(feedbackTab, tabFeedbackBtn));
 
   async function loadRouteList() {
     const snapshot = await db.collection('routes').get();
@@ -864,6 +884,92 @@
       currentSubmissionId = null;
       currentSubmission = null;
       await loadSubmissionList();
+    } catch (e) {
+      showStatus('Failed to delete: ' + e.message, true);
+    }
+  });
+
+  // --- Feedback (General/App/Route-Walk, from the app's Feedback tab) ---
+  const feedbackPicker = document.getElementById('feedback-picker');
+  const feedbackDetails = document.getElementById('feedback-details');
+  const feedbackFieldsEl = document.getElementById('feedback-fields');
+  let currentFeedbackId = null;
+
+  async function loadFeedbackList() {
+    const snapshot = await db.collection('feedback').get();
+    const items = [];
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      items.push({ id: doc.id, label: `[${d.category || '?'}] ${d.submitterName || '(no name)'}` });
+    });
+
+    feedbackPicker.innerHTML = '<option value="">-- Select feedback --</option>';
+    items.forEach(i => {
+      const opt = document.createElement('option');
+      opt.value = i.id;
+      opt.textContent = i.label;
+      feedbackPicker.appendChild(opt);
+    });
+  }
+
+  feedbackPicker.addEventListener('change', async () => {
+    const id = feedbackPicker.value;
+    if (!id) {
+      feedbackDetails.style.display = 'none';
+      currentFeedbackId = null;
+      return;
+    }
+    const doc = await db.collection('feedback').doc(id).get();
+    if (!doc.exists) { showStatus('Feedback not found - it may have already been deleted.', true); return; }
+    currentFeedbackId = id;
+    renderFeedbackDetails(doc.data());
+    feedbackDetails.style.display = 'block';
+  });
+
+  // Ordered so category-shared fields (name/email/rating/comments) come
+  // first, then whichever category-specific fields are actually present -
+  // one generic renderer rather than three near-duplicate detail views.
+  const FEEDBACK_FIELD_LABELS = {
+    category: 'Category',
+    submitterName: 'Name',
+    submitterEmail: 'Email',
+    rating: 'Rating',
+    comments: 'Comments',
+    appFeedbackType: 'Type',
+    devicePlatform: 'Device platform',
+    deviceModel: 'Device model',
+    eventLabel: 'Walk',
+    walkQuality: 'How did you find this walk?',
+    walkOrganisation: 'How did you find the organisation?',
+    bookingExperience: 'How did you find booking?'
+  };
+
+  function renderFeedbackDetails(fb) {
+    feedbackFieldsEl.innerHTML = '';
+    Object.entries(FEEDBACK_FIELD_LABELS).forEach(([key, fieldLabel]) => {
+      const value = fb[key];
+      if (value === undefined || value === null || value === '') return;
+
+      const labelEl = document.createElement('label');
+      labelEl.textContent = fieldLabel;
+      const valueEl = document.createElement('div');
+      valueEl.className = 'readout';
+      valueEl.textContent = value;
+
+      feedbackFieldsEl.appendChild(labelEl);
+      feedbackFieldsEl.appendChild(valueEl);
+    });
+  }
+
+  document.getElementById('delete-feedback-btn').addEventListener('click', async () => {
+    if (!currentFeedbackId) return;
+    if (!confirm('Delete this feedback? This can\'t be undone.')) return;
+    try {
+      await db.collection('feedback').doc(currentFeedbackId).delete();
+      showStatus('Feedback deleted.', false);
+      feedbackDetails.style.display = 'none';
+      currentFeedbackId = null;
+      await loadFeedbackList();
     } catch (e) {
       showStatus('Failed to delete: ' + e.message, true);
     }
