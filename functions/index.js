@@ -6,9 +6,12 @@ const { getFirestore } = require("firebase-admin/firestore");
 initializeApp();
 const db = getFirestore();
 
-// Overridable via functions/.env without touching code - see that file.
+// Both overridable via functions/.env without touching code - see that file.
 const notifyEmail = defineString("NOTIFY_EMAIL", {
   default: "boltonwalkingandoutdoors@yahoo.com",
+});
+const adminCcEmail = defineString("ADMIN_CC_EMAIL", {
+  default: "johncampbellhiggens@googlemail.com",
 });
 
 // Close to both the Firestore multi-region (Belgium/Netherlands) and the
@@ -21,10 +24,17 @@ const REGION = "europe-west1";
  * bypass Firestore rules entirely, so this works regardless of the public
  * create-only rule on "mail" (that rule exists only for a possible future
  * direct client write, not needed by this function).
+ *
+ * Always cc's the admin address; additionally cc's the submitter themselves
+ * if they gave an email, so they get a copy of what they sent.
  */
-function queueEmail(subject, bodyLines) {
+function queueEmail(subject, bodyLines, submitterEmail) {
+  const cc = [adminCcEmail.value()];
+  if (submitterEmail) cc.push(submitterEmail);
+
   return db.collection("mail").add({
     to: notifyEmail.value(),
+    cc,
     message: {
       subject,
       text: bodyLines.filter((line) => line !== null).join("\n"),
@@ -51,7 +61,7 @@ exports.onRouteSubmissionCreated = onDocumentCreated(
       `Submitted by: ${data.submitterName || ""} (${data.submitterEmail || ""})`,
       "",
       "Review it in the admin page's Submissions tab.",
-    ]);
+    ], data.submitterEmail);
   }
 );
 
@@ -74,6 +84,6 @@ exports.onFeedbackCreated = onDocumentCreated(
       `Device: ${data.devicePlatform || ""} ${data.deviceModel || ""}`,
       "",
       "Review it in the admin page's Feedback tab.",
-    ]);
+    ], data.submitterEmail);
   }
 );
