@@ -57,6 +57,10 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release' AND $(TargetFramework.Contains('-android'))">
     <!-- Play Store requires an .aab bundle, not a raw .apk -->
     <AndroidPackageFormat>aab</AndroidPackageFormat>
+    <!-- Run R8 over the Java/Kotlin side of the app (AndroidX, Maps, Play
+         services, MAUI's Java glue) to shrink unused code - Play Console's
+         DEX optimisation check flags apps that ship it unshrunk. -->
+    <AndroidLinkTool>r8</AndroidLinkTool>
     <AndroidKeyStore>true</AndroidKeyStore>
     <AndroidSigningKeyStore>$(BWOAS_KEYSTORE_PATH)</AndroidSigningKeyStore>
     <AndroidSigningKeyAlias>$(BWOAS_KEY_ALIAS)</AndroidSigningKeyAlias>
