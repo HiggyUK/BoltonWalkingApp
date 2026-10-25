@@ -31,6 +31,16 @@ jobs:
       - name: Restore MAUI/iOS workloads
         run: dotnet workload restore ${{ env.PROJECT_PATH }}
 
+      # workload restore floats to the newest .NET for iOS, which can require
+      # an Xcode the runner image doesn't have yet (27.1 needed Xcode 27.1
+      # while macos-26 tops out at 26.6). Pin the iOS workload to a release
+      # that matches the Xcode selected above - bump both together.
+      - name: Pin iOS workload to match Xcode
+        run: |
+          echo '{"microsoft.net.sdk.ios": "26.5.10301/10.0.100"}' > ios-workload-rollback.json
+          dotnet workload update --from-rollback-file ios-workload-rollback.json
+          dotnet workload list
+
       - name: Create temporary keychain
         env:
           KEYCHAIN_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}
