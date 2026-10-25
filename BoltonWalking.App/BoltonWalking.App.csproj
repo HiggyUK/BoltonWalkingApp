@@ -33,6 +33,9 @@
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
     <TargetSdkVersion>36</TargetSdkVersion>
+    <!-- Play Console rejects bundles below 24 (Android 7.0) once Play
+         automatic protection is on - the .NET default would be 21. -->
+    <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <!-- Apple rejects uploads outright if CFBundleShortVersionString has more
