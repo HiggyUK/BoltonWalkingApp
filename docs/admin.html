@@ -20,9 +20,9 @@
   .row input { flex: 1; }
   .row button { margin-top: 0; padding: 6px 10px; }
   .card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 16px; }
-  #status { margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 14px; display: none; }
-  #status.ok { background: #e6f7e9; color: #1a7a34; display: block; }
-  #status.err { background: #fde8e8; color: #b3261e; display: block; }
+  #status, #login-status { margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 14px; display: none; }
+  #status.ok, #login-status.ok { background: #e6f7e9; color: #1a7a34; display: block; }
+  #status.err, #login-status.err { background: #fde8e8; color: #b3261e; display: block; }
   #app-section { display: none; }
   .list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
   .hint { color: var(--muted); font-size: 12px; margin-top: 2px; }
@@ -43,6 +43,8 @@
   <label for="password">Password</label>
   <input type="password" id="password" autocomplete="current-password">
   <button id="login-btn">Sign in</button>
+  <button type="button" class="secondary" id="forgot-password-btn">Forgot password?</button>
+  <div id="login-status" style="margin-top:12px;"></div>
 </div>
 
 <div id="app-section">
@@ -53,6 +55,7 @@
     <button type="button" id="tab-submissions-btn">Submissions</button>
     <button type="button" id="tab-feedback-btn">Feedback</button>
     <button type="button" id="tab-documents-btn">Documents</button>
+    <button type="button" id="tab-admins-btn">Admins</button>
   </div>
 
   <div id="routes-tab">
@@ -296,6 +299,21 @@
     <button class="secondary" id="delete-document-btn" style="display:none;">Delete this document</button>
   </div>
 
+  <div id="admins-tab" style="display:none;">
+    <div class="card">
+      <label>Admins</label>
+      <div class="hint">People who can sign in to this page. Removing someone takes effect immediately.</div>
+      <div id="admin-list"></div>
+    </div>
+
+    <div class="card">
+      <label>Add an admin</label>
+      <div class="hint">If they don't have a login yet one is created, and either way they're emailed a link to set their password - then they sign in here with that email.</div>
+      <input type="email" id="new-admin-email" placeholder="their.email@example.com">
+      <button type="button" id="add-admin-btn">Add admin</button>
+    </div>
+  </div>
+
   <button class="secondary" id="logout-btn">Sign out</button>
   <div id="status"></div>
 </div>
@@ -339,10 +357,37 @@
   const routePicker = document.getElementById('route-picker');
   const deleteBtn = document.getElementById('delete-btn');
 
-  auth.onAuthStateChanged(user => {
+  const loginStatusEl = document.getElementById('login-status');
+  function showLoginStatus(message, isError) {
+    loginStatusEl.textContent = message;
+    loginStatusEl.className = isError ? 'err' : 'ok';
+  }
+
+  // Signing in isn't enough - the account's email must also be on the
+  // "admins" list (doc id = lowercased email), which is what the Firestore
+  // and Storage rules check too. See firestore.rules / the Admins tab.
+  async function isListedAdmin(user) {
+    if (!user.email) return false;
+    try {
+      const doc = await db.collection('admins').doc(user.email.toLowerCase()).get();
+      return doc.exists;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  auth.onAuthStateChanged(async user => {
+    if (user && !(await isListedAdmin(user))) {
+      showLoginStatus(`${user.email} isn't an admin. Ask an existing admin to add you on the Admins tab.`, true);
+      await auth.signOut();
+      return;
+    }
+
     loginSection.style.display = user ? 'none' : 'block';
     appSection.style.display = user ? 'block' : 'none';
     if (user) {
+      showLoginStatus('', false);
+      loadAdminList();
       loadRouteList();
       loadEventRouteDropdown();
       loadEventList();
@@ -363,10 +408,12 @@
   const tabFeedbackBtn = document.getElementById('tab-feedback-btn');
   const documentsTab = document.getElementById('documents-tab');
   const tabDocumentsBtn = document.getElementById('tab-documents-btn');
+  const adminsTab = document.getElementById('admins-tab');
+  const tabAdminsBtn = document.getElementById('tab-admins-btn');
 
   function showTab(tab, btn) {
-    [routesTab, eventsTab, submissionsTab, feedbackTab, documentsTab].forEach(t => t.style.display = t === tab ? 'block' : 'none');
-    [tabRoutesBtn, tabEventsBtn, tabSubmissionsBtn, tabFeedbackBtn, tabDocumentsBtn].forEach(b => b.classList.toggle('active', b === btn));
+    [routesTab, eventsTab, submissionsTab, feedbackTab, documentsTab, adminsTab].forEach(t => t.style.display = t === tab ? 'block' : 'none');
+    [tabRoutesBtn, tabEventsBtn, tabSubmissionsBtn, tabFeedbackBtn, tabDocumentsBtn, tabAdminsBtn].forEach(b => b.classList.toggle('active', b === btn));
   }
 
   tabRoutesBtn.addEventListener('click', () => showTab(routesTab, tabRoutesBtn));
@@ -374,6 +421,7 @@
   tabSubmissionsBtn.addEventListener('click', () => showTab(submissionsTab, tabSubmissionsBtn));
   tabFeedbackBtn.addEventListener('click', () => showTab(feedbackTab, tabFeedbackBtn));
   tabDocumentsBtn.addEventListener('click', () => showTab(documentsTab, tabDocumentsBtn));
+  tabAdminsBtn.addEventListener('click', () => showTab(adminsTab, tabAdminsBtn));
 
   async function loadRouteList() {
     const snapshot = await db.collection('routes').get();
@@ -465,7 +513,18 @@
     try {
       await auth.signInWithEmailAndPassword(email, password);
     } catch (e) {
-      showStatus('Sign-in failed: ' + e.message, true);
+      showLoginStatus('Sign-in failed: ' + e.message, true);
+    }
+  });
+
+  document.getElementById('forgot-password-btn').addEventListener('click', async () => {
+    const email = document.getElementById('email').value.trim();
+    if (!email) { showLoginStatus('Enter your email above first.', true); return; }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      showLoginStatus(`If ${email} has a login, a password reset link is on its way.`, false);
+    } catch (e) {
+      showLoginStatus('Couldn\'t send a reset email: ' + e.message, true);
     }
   });
 
@@ -990,6 +1049,93 @@
       await loadSubmissionList();
     } catch (e) {
       showStatus('Failed to delete: ' + e.message, true);
+    }
+  });
+
+  // --- Admins (who can sign in here - checked by the security rules too) ---
+  const adminListEl = document.getElementById('admin-list');
+
+  async function loadAdminList() {
+    const snapshot = await db.collection('admins').get();
+    const admins = [];
+    snapshot.forEach(doc => admins.push({ email: doc.id, ...doc.data() }));
+    admins.sort((a, b) => a.email.localeCompare(b.email));
+
+    const me = (auth.currentUser?.email || '').toLowerCase();
+    adminListEl.innerHTML = '';
+    admins.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const label = document.createElement('span');
+      label.style.flex = '1';
+      label.textContent = a.email + (a.email === me ? ' (you)' : '');
+      row.appendChild(label);
+
+      // No removing yourself - the last admin could otherwise lock everyone out.
+      if (a.email !== me) {
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'secondary';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', async () => {
+          if (!confirm(`Remove ${a.email} as an admin? They won't be able to sign in here any more.`)) return;
+          try {
+            await db.collection('admins').doc(a.email).delete();
+            showStatus(`Removed ${a.email}.`, false);
+            await loadAdminList();
+          } catch (e) {
+            showStatus('Failed to remove: ' + e.message, true);
+          }
+        });
+        row.appendChild(removeBtn);
+      }
+      adminListEl.appendChild(row);
+    });
+  }
+
+  function randomPassword() {
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  document.getElementById('add-admin-btn').addEventListener('click', async () => {
+    const addBtn = document.getElementById('add-admin-btn');
+    const email = document.getElementById('new-admin-email').value.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showStatus('Enter a valid email address.', true); return; }
+
+    addBtn.disabled = true;
+    try {
+      // Created through a second Firebase app instance - creating a user on
+      // the main one would sign *you* out and in as them. The random password
+      // is never used: they set their own from the reset email below.
+      const creator = firebase.apps.find(a => a.name === 'admin-creator')
+        || firebase.initializeApp(firebase.app().options, 'admin-creator');
+      try {
+        await creator.auth().createUserWithEmailAndPassword(email, randomPassword());
+      } catch (e) {
+        if (e.code !== 'auth/email-already-in-use') throw e;
+      } finally {
+        await creator.auth().signOut();
+      }
+
+      await db.collection('admins').doc(email).set({
+        email: email,
+        addedBy: auth.currentUser.email,
+        addedAt: new Date().toISOString()
+      });
+      await auth.sendPasswordResetEmail(email);
+
+      document.getElementById('new-admin-email').value = '';
+      showStatus(`Added ${email}. They've been emailed a link to set their password, then they can sign in here.`, false);
+      await loadAdminList();
+    } catch (e) {
+      const hint = e.code === 'auth/operation-not-allowed' || e.code === 'auth/admin-restricted-operation'
+        ? ' (sign-up is turned off in Firebase Authentication - create the login there under Users > Add user, then add them here again)'
+        : '';
+      showStatus('Failed to add admin: ' + e.message + hint, true);
+    } finally {
+      addBtn.disabled = false;
     }
   });
 

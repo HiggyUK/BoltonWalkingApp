@@ -1,0 +1,66 @@
+rules_version = '2';
+
+// Deployed with: firebase deploy --only firestore:rules
+// Anything not matched below is denied - including "mail", which only the
+// Cloud Functions write to (via the Admin SDK, which bypasses these rules).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // An admin is a signed-in user whose (lowercased) email has a document
+    // in "admins" - managed from the admin page's Admins tab. Signing in
+    // alone isn't enough, since Firebase Auth may allow public sign-up.
+    function isAdmin() {
+      return request.auth != null
+          && request.auth.token.email is string
+          && exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()));
+    }
+
+    // --- Public content: read by the app, edited from the admin page ---
+    match /routes/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /events/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /committeeMembers/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /documents/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- Submitted from the app: anyone can create, only admins can see ---
+    match /route-submissions/{id} {
+      allow create: if request.resource.data.name is string
+                 && request.resource.data.name.size() > 0
+                 && request.resource.data.name.size() < 200
+                 && request.resource.data.venue is string
+                 && request.resource.data.difficulty in ['Easy', 'Moderate', 'Hard'];
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Contains members' names and email addresses - never publicly readable.
+    match /feedback/{id} {
+      allow create: if request.resource.data.category in ['General', 'App', 'RouteWalk']
+                 && request.resource.data.submitterName is string
+                 && request.resource.data.submitterName.size() > 0
+                 && request.resource.data.submitterEmail is string
+                 && request.resource.data.submitterEmail.size() > 0;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // --- Admin list (document id = lowercased email) ---
+    // A signed-in user may check their own entry, so the admin page can tell
+    // a non-admin why they can't get in.
+    match /admins/{email} {
+      allow read: if isAdmin()
+                  || (request.auth != null && request.auth.token.email is string
+                      && request.auth.token.email.lower() == email);
+      allow write: if isAdmin();
+    }
+  }
+}

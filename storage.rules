@@ -1,0 +1,31 @@
+rules_version = '2';
+
+// Deployed with: firebase deploy --only storage
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Same admin check as firestore.rules - reads the Firestore "admins"
+    // list (cross-service rules; the first deploy asks to grant the Storage
+    // service permission to read Firestore).
+    function isAdmin() {
+      return request.auth != null
+          && request.auth.token.email is string
+          && firestore.exists(/databases/(default)/documents/admins/$(request.auth.token.email.lower()));
+    }
+
+    // Route photos/GPX/risk assessments, policy documents etc - public
+    // download links are used directly by the app.
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Photos attached to route submissions from the app. Create only - not
+    // "write" - so an anonymous upload can't overwrite or delete an
+    // existing photo.
+    match /submission-photos/{allPaths=**} {
+      allow create: if request.resource.size < 10 * 1024 * 1024
+                  && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
