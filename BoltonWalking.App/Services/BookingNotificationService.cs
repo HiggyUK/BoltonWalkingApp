@@ -19,7 +19,7 @@ public class BookingNotificationService : IBookingNotificationService
 
         foreach (var eventItem in pending)
         {
-            var routeName = eventItem.Route?.Name ?? "your walk";
+            var routeName = eventItem.IsCustom || eventItem.Route is not null ? eventItem.DisplayTitle : "your walk";
 
             await LocalNotificationCenter.Current.Show(new NotificationRequest
             {

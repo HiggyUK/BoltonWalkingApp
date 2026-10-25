@@ -1,14 +1,31 @@
 namespace BoltonWalking.App.Models;
 
 /// <summary>
-/// A scheduled walk - links a WalkingRoute to a date/time and a Ticket
-/// Tailor booking link. Read from the "events" Firestore collection and
-/// joined to its route client-side (see EventsService).
+/// A scheduled event from the "events" Firestore collection. Usually a walk -
+/// linking a WalkingRoute to a date/time and a Ticket Tailor booking link,
+/// joined to its route client-side (see EventsService). Can also be a custom
+/// event (e.g. the Christmas party) with no route, whose title, venue and
+/// details are entered by hand instead.
 /// </summary>
 public class EventItem
 {
+    public const string CustomType = "custom";
+
     public string Id { get; set; } = string.Empty;
+
+    // "walk" (or missing, for events saved before custom events existed) or "custom".
+    public string Type { get; set; } = "walk";
+    public bool IsCustom => Type == CustomType;
+
     public int RouteId { get; set; }
+
+    // Custom events only - walks take these from their Route instead.
+    public string Title { get; set; } = string.Empty;
+    public string Venue { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public string Price { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+
     public DateTime StartDateTime { get; set; }
     public DateTime EndDateTime { get; set; }
     public string TicketLink { get; set; } = string.Empty;
@@ -22,6 +39,12 @@ public class EventItem
     // Populated by EventsService after fetching both collections - null if
     // the route was deleted/renumbered after the event was created.
     public WalkingRoute? Route { get; set; }
+
+    // Card/detail-page text that works for both walks and custom events.
+    public string DisplayTitle => IsCustom ? Title : Route?.Name ?? "Route no longer available";
+    public string DisplayVenue => IsCustom ? Venue : Route?.Venue ?? string.Empty;
+    public string DisplayBadge => IsCustom ? "🎉 Social event" : Route?.DifficultyBadge ?? string.Empty;
+    public string BookButtonText => IsCustom ? "Book tickets" : "Book this walk";
 
     public string DisplayDate => StartDateTime.ToString("dddd d MMMM");
     public string DisplayTime => $"{StartDateTime:HH:mm}–{EndDateTime:HH:mm}";

@@ -63,6 +63,17 @@ public partial class BookViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task OpenEventDetailsAsync(EventItem? eventItem)
+    {
+        if (eventItem is null) return;
+
+        await Shell.Current.GoToAsync(nameof(Views.EventDetailsPage), new Dictionary<string, object>
+        {
+            [EventDetailsViewModel.EventQueryKey] = eventItem
+        });
+    }
+
+    [RelayCommand]
     private async Task OpenBookingPageAsync()
     {
         await Launcher.OpenAsync(ClubInfo.BookingUrl);

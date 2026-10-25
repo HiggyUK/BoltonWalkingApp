@@ -80,6 +80,7 @@ public static class MauiProgram
 
         builder.Services.AddTransient<RoutesViewModel>();
         builder.Services.AddTransient<RouteDetailsViewModel>();
+        builder.Services.AddTransient<EventDetailsViewModel>();
         builder.Services.AddTransient<CommitteeViewModel>();
         builder.Services.AddTransient<BookViewModel>();
         builder.Services.AddTransient<SubmitRouteViewModel>();
@@ -89,6 +90,7 @@ public static class MauiProgram
         builder.Services.AddTransient<BookPage>();
         builder.Services.AddTransient<RoutesPage>();
         builder.Services.AddTransient<RouteDetailsPage>();
+        builder.Services.AddTransient<EventDetailsPage>();
         builder.Services.AddTransient<SubmitRoutePage>();
         builder.Services.AddTransient<FeedbackPage>();
         builder.Services.AddTransient<FeedbackFormPage>();

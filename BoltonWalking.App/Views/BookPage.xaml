@@ -73,13 +73,9 @@
                                     Margin="0,0,0,12">
                                 <VerticalStackLayout Spacing="6">
 
-                                    <Label FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource Secondary}">
-                                        <Label.Text>
-                                            <Binding Path="Route.Name" TargetNullValue="Route no longer available" />
-                                        </Label.Text>
-                                    </Label>
+                                    <Label Text="{Binding DisplayTitle}" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource Secondary}" />
 
-                                    <Label Text="{Binding Route.Venue}" FontSize="13" TextColor="{DynamicResource TextMuted}" />
+                                    <Label Text="{Binding DisplayVenue}" FontSize="13" TextColor="{DynamicResource TextMuted}" />
 
                                     <FlexLayout Wrap="Wrap" AlignItems="Center" JustifyContent="Start" Margin="0,4,0,0">
                                         <Border BackgroundColor="White"
@@ -87,7 +83,7 @@
                                                 Stroke="Transparent"
                                                 Padding="12,5"
                                                 Margin="0,0,8,0">
-                                            <Label Text="{Binding Route.DifficultyBadge}" TextColor="{DynamicResource Secondary}" FontAttributes="Bold" FontSize="12" />
+                                            <Label Text="{Binding DisplayBadge}" TextColor="{DynamicResource Secondary}" FontAttributes="Bold" FontSize="12" />
                                         </Border>
                                         <Label Text="{Binding DisplayDate}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" />
                                     </FlexLayout>
@@ -96,7 +92,7 @@
 
                                     <!-- Bookable: normal red button that opens the ticket link.
                                          Not yet bookable: disabled, shows when it opens instead. -->
-                                    <Button Text="Book this walk"
+                                    <Button Text="{Binding BookButtonText}"
                                             IsVisible="{Binding IsBookable}"
                                             BackgroundColor="{DynamicResource Primary}"
                                             TextColor="White"
@@ -110,6 +106,17 @@
                                             BackgroundColor="#D8D8D8"
                                             TextColor="{DynamicResource TextMuted}"
                                             Margin="0,8,0,0" />
+
+                                    <!-- Custom events (e.g. the Christmas party) have no route
+                                         page, so their full write-up lives on EventDetailsPage. -->
+                                    <Button Text="Event details"
+                                            IsVisible="{Binding IsCustom}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{DynamicResource Primary}"
+                                            BorderColor="{DynamicResource Primary}"
+                                            BorderWidth="1"
+                                            Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.OpenEventDetailsCommand}"
+                                            CommandParameter="{Binding .}" />
 
                                 </VerticalStackLayout>
                             </Border>

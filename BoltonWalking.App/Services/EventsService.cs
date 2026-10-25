@@ -55,15 +55,25 @@ public class EventsService : IEventsService
         // back to the club's Monday/Wednesday rule computed from the walk's
         // own date, and only becomes "always bookable" if that rule doesn't
         // apply either (i.e. the walk isn't on a Monday or Wednesday).
+        // Custom events never follow the walk rule - a party on a Monday
+        // shouldn't silently wait until the prior Thursday.
+        var type = FirestoreClient.GetString(fields, "type", "walk");
+        var isCustom = type == EventItem.CustomType;
         var explicitOpens = DateTime.TryParse(FirestoreClient.GetString(fields, "bookingOpensAt"), out var o) ? o : (DateTime?)null;
         var bookingOpensAt = explicitOpens is { } real && real > DateTime.MinValue
             ? real
-            : EventItem.ComputeStandardBookingOpensAt(start) ?? DateTime.MinValue;
+            : (isCustom ? null : EventItem.ComputeStandardBookingOpensAt(start)) ?? DateTime.MinValue;
 
         return new EventItem
         {
             Id = id,
+            Type = type,
             RouteId = routeId,
+            Title = FirestoreClient.GetString(fields, "title"),
+            Venue = FirestoreClient.GetString(fields, "venue"),
+            Address = FirestoreClient.GetString(fields, "address"),
+            Price = FirestoreClient.GetString(fields, "price"),
+            Description = FirestoreClient.GetString(fields, "description"),
             StartDateTime = start,
             EndDateTime = DateTime.TryParse(FirestoreClient.GetString(fields, "endDateTime"), out var end) ? end : DateTime.MinValue,
             TicketLink = FirestoreClient.GetString(fields, "ticketLink"),

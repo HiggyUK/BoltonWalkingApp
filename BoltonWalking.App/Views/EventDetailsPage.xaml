@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BoltonWalking.App.ViewModels"
+             xmlns:converters="clr-namespace:BoltonWalking.App.Converters"
+             x:DataType="vm:EventDetailsViewModel"
+             x:Class="BoltonWalking.App.Views.EventDetailsPage"
+             Title="{Binding Event.DisplayTitle}">
+
+    <ContentPage.Resources>
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="12">
+
+            <Label Text="{Binding Event.DisplayTitle}"
+                   FontSize="23"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Secondary}" />
+
+            <FlexLayout Wrap="Wrap" AlignItems="Center" JustifyContent="Start">
+                <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="Transparent"
+                        Padding="12,5"
+                        Margin="0,0,8,8">
+                    <Label Text="{Binding Event.DisplayBadge}" TextColor="{DynamicResource Secondary}" FontAttributes="Bold" FontSize="12" />
+                </Border>
+                <Label Text="{Binding Event.DisplayDate}" FontSize="15" FontAttributes="Bold" VerticalOptions="Center" Margin="0,0,8,8" />
+                <Label Text="{Binding Event.DisplayTime}" FontSize="15" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" Margin="0,0,0,8" />
+            </FlexLayout>
+
+            <BoxView HeightRequest="1" BackgroundColor="#E0E0E0" Margin="0,4" />
+
+            <!-- Venue - tapping opens it in the phone's maps app -->
+            <Label Text="VENUE" FontSize="12" FontAttributes="Bold" CharacterSpacing="1" TextColor="{DynamicResource TextMuted}" />
+            <Label FontSize="15">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="{Binding Event.Venue}" FontAttributes="Bold" />
+                        <Span Text="&#10;" />
+                        <Span Text="{Binding Event.Address}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label Text="Open in Maps"
+                   FontSize="14"
+                   TextColor="{DynamicResource Primary}"
+                   TextDecorations="Underline">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenAddressCommand}" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <!-- Price -->
+            <Label Text="PRICE" FontSize="12" FontAttributes="Bold" CharacterSpacing="1" TextColor="{DynamicResource TextMuted}" Margin="0,8,0,0"
+                   IsVisible="{Binding Event.Price, Converter={StaticResource StringToBoolConverter}}" />
+            <Label Text="{Binding Event.Price}" FontSize="15"
+                   IsVisible="{Binding Event.Price, Converter={StaticResource StringToBoolConverter}}" />
+
+            <!-- Free-text write-up: food, entertainment, ticket deadline, refunds etc. -->
+            <Label Text="DETAILS" FontSize="12" FontAttributes="Bold" CharacterSpacing="1" TextColor="{DynamicResource TextMuted}" Margin="0,8,0,0"
+                   IsVisible="{Binding Event.Description, Converter={StaticResource StringToBoolConverter}}" />
+            <Label Text="{Binding Event.Description}" FontSize="15" LineHeight="1.2"
+                   IsVisible="{Binding Event.Description, Converter={StaticResource StringToBoolConverter}}" />
+
+            <!-- Same bookable / not-yet-bookable pair as the Book tab card -->
+            <Button Text="{Binding Event.BookButtonText}"
+                    IsVisible="{Binding Event.IsBookable}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="White"
+                    Margin="0,12,0,0"
+                    Command="{Binding OpenTicketLinkCommand}" />
+
+            <Button Text="{Binding Event.BookingOpensDisplay}"
+                    IsVisible="{Binding Event.IsBookable, Converter={StaticResource InvertedBoolConverter}}"
+                    IsEnabled="False"
+                    BackgroundColor="#D8D8D8"
+                    TextColor="{DynamicResource TextMuted}"
+                    Margin="0,12,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -159,8 +159,34 @@
     </div>
 
     <div class="card">
-      <label>Route</label>
-      <select id="event-route"></select>
+      <label>Event type</label>
+      <select id="event-type">
+        <option value="walk">Walk (on one of our routes)</option>
+        <option value="custom">Custom event (e.g. Christmas party - no route)</option>
+      </select>
+
+      <div id="event-walk-fields">
+        <label>Route</label>
+        <select id="event-route"></select>
+      </div>
+
+      <div id="event-custom-fields" style="display:none;">
+        <label>Event title</label>
+        <input type="text" id="event-title" placeholder="e.g. BWOAS 15th Anniversary &amp; End of Year Celebration">
+
+        <label>Venue</label>
+        <input type="text" id="event-venue" placeholder="e.g. Victory Reform Club">
+
+        <label>Address</label>
+        <input type="text" id="event-address" placeholder="e.g. 25 Victory Street, Bolton, BL1 4JA">
+
+        <label>Price</label>
+        <input type="text" id="event-price" placeholder="e.g. £21 per person (drinks extra)">
+
+        <label>Details</label>
+        <div class="hint">Shown on the event's page in the app - food, entertainment, ticket deadline, refunds, parking, who can attend etc. Line breaks are kept.</div>
+        <textarea id="event-description" style="min-height:140px;"></textarea>
+      </div>
 
       <label>Date</label>
       <input type="date" id="event-date">
@@ -583,6 +609,17 @@
   const eventPicker = document.getElementById('event-picker');
   const eventRouteSelect = document.getElementById('event-route');
   const deleteEventBtn = document.getElementById('delete-event-btn');
+  const eventTypeSelect = document.getElementById('event-type');
+
+  // Walks take their name/venue from the chosen route; custom events (no
+  // route) have them typed in instead - only one set of fields is shown.
+  const CUSTOM_EVENT_FIELDS = ['title', 'venue', 'address', 'price', 'description'];
+  function showFieldsForEventType() {
+    const isCustom = eventTypeSelect.value === 'custom';
+    document.getElementById('event-walk-fields').style.display = isCustom ? 'none' : 'block';
+    document.getElementById('event-custom-fields').style.display = isCustom ? 'block' : 'none';
+  }
+  eventTypeSelect.addEventListener('change', showFieldsForEventType);
 
   async function loadEventRouteDropdown() {
     const snapshot = await db.collection('routes').get();
@@ -610,8 +647,10 @@
     const events = [];
     eventsSnapshot.forEach(doc => {
       const data = doc.data();
-      const routeName = routeNames[String(data.routeId)] || `route ${data.routeId} (missing)`;
-      events.push({ id: doc.id, label: `${data.startDateTime || '?'} - ${routeName}` });
+      const name = data.type === 'custom'
+        ? `${data.title || '(untitled)'} [custom]`
+        : routeNames[String(data.routeId)] || `route ${data.routeId} (missing)`;
+      events.push({ id: doc.id, label: `${data.startDateTime || '?'} - ${name}` });
     });
     events.sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
 
@@ -649,6 +688,9 @@
     document.getElementById('event-ticket-link').value = '';
     document.getElementById('event-booking-date').value = '';
     document.getElementById('event-booking-time').value = DEFAULT_BOOKING_TIME;
+    eventTypeSelect.value = 'walk';
+    CUSTOM_EVENT_FIELDS.forEach(f => { document.getElementById(`event-${f}`).value = ''; });
+    showFieldsForEventType();
     showStatus('', false);
     statusEl.style.display = 'none';
   }
@@ -695,7 +737,11 @@
   function loadFormFromEvent(id, ev) {
     editingEventId = id;
     deleteEventBtn.style.display = 'inline-block';
+    // Events saved before custom events existed have no type - they're walks.
+    eventTypeSelect.value = ev.type === 'custom' ? 'custom' : 'walk';
+    showFieldsForEventType();
     eventRouteSelect.value = String(ev.routeId);
+    CUSTOM_EVENT_FIELDS.forEach(f => { document.getElementById(`event-${f}`).value = ev[f] || ''; });
     document.getElementById('event-date').value = toDateInputValue(ev.startDateTime);
     document.getElementById('event-start-time').value = toTimeInputValue(ev.startDateTime);
     document.getElementById('event-end-time').value = toTimeInputValue(ev.endDateTime);
@@ -735,7 +781,15 @@
     if (!date || !startTime || !endTime) { showStatus('Date, start time and end time are all required.', true); return; }
     if (endTime <= startTime) { showStatus('End time must be after start time.', true); return; }
     if (!ticketLink) { showStatus('Ticket Tailor link is required.', true); return; }
-    if (!Number.isFinite(routeId)) { showStatus('Pick a route.', true); return; }
+    const isCustom = eventTypeSelect.value === 'custom';
+    const custom = {};
+    CUSTOM_EVENT_FIELDS.forEach(f => { custom[f] = document.getElementById(`event-${f}`).value.trim(); });
+    if (isCustom) {
+      if (!custom.title || !custom.venue) { showStatus('A custom event needs a title and a venue.', true); return; }
+    } else if (!Number.isFinite(routeId)) {
+      showStatus('Pick a route.', true);
+      return;
+    }
     // The booking time is always prefilled (DEFAULT_BOOKING_TIME), so it's
     // the date alone that decides whether this is an override - no date
     // means "apply the standard Mon/Wed rule" and the time is ignored.
@@ -758,7 +812,13 @@
       }
 
       const ev = {
-        routeId: routeId,
+        type: isCustom ? 'custom' : 'walk',
+        // 0 for custom events - no route. Kept as a number so app versions
+        // from before custom events still read the document without errors.
+        routeId: isCustom ? 0 : routeId,
+        // set() replaces the whole document, so switching an event from
+        // custom back to walk drops these fields again.
+        ...(isCustom ? custom : {}),
         startDateTime: `${date}T${startTime}:00`,
         endDateTime: `${date}T${endTime}:00`,
         ticketLink: ticketLink,
