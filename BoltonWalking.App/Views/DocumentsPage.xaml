@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BoltonWalking.App.ViewModels"
+             xmlns:models="clr-namespace:BoltonWalking.App.Models"
+             xmlns:converters="clr-namespace:BoltonWalking.App.Converters"
+             x:DataType="vm:DocumentsViewModel"
+             x:Class="BoltonWalking.App.Views.DocumentsPage"
+             x:Name="PageRoot"
+             Title="Policies &amp; Documents">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem IconImageSource="icon_refresh_white.svg"
+                     Command="{Binding LoadDocumentsCommand}"
+                     AutomationProperties.Name="Refresh" />
+    </ContentPage.ToolbarItems>
+
+    <ContentPage.Resources>
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converters:IntToInverseBoolConverter x:Key="IntToInverseBoolConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Label Text="Policies &amp; Documents"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Secondary}" />
+
+            <Label Text="The club's policies and other documents. Tap one to open or save the PDF."
+                   FontSize="15"
+                   TextColor="{DynamicResource TextMuted}" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                IsVisible="{Binding IsBusy}"
+                                Color="{DynamicResource Primary}" />
+
+            <Label Text="{Binding ErrorMessage}"
+                   FontSize="14"
+                   TextColor="{DynamicResource Primary}"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}" />
+
+            <Label Text="No documents available yet."
+                   FontSize="15"
+                   TextColor="{DynamicResource TextMuted}"
+                   IsVisible="{Binding Documents.Count, Converter={StaticResource IntToInverseBoolConverter}}" />
+
+            <CollectionView ItemsSource="{Binding Documents}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:ClubDocument">
+                        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                                Stroke="Transparent"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="16"
+                                Margin="0,0,0,12">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.OpenDocumentCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                    <Label Text="{Binding Title}"
+                                           FontSize="17"
+                                           FontAttributes="Bold"
+                                           TextColor="{DynamicResource Secondary}" />
+                                    <Label Text="{Binding LastUpdatedDisplay}"
+                                           FontSize="13"
+                                           TextColor="{DynamicResource TextMuted}"
+                                           IsVisible="{Binding LastUpdatedDisplay, Converter={StaticResource StringToBoolConverter}}" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1"
+                                       Text="PDF"
+                                       FontSize="13"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"
+                                       TextColor="{DynamicResource Primary}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="{Binding StatusMessage}"
+                   FontSize="14"
+                   TextColor="{DynamicResource TextMuted}"
+                   IsVisible="{Binding StatusMessage, Converter={StaticResource StringToBoolConverter}}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

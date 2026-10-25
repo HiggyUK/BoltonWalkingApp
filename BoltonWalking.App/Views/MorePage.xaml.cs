@@ -26,4 +26,9 @@ public partial class MorePage : ContentPage
     {
         await Shell.Current.GoToAsync(nameof(CommitteePage));
     }
+
+    private async void OnDocumentsTapped(object? sender, TappedEventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(DocumentsPage));
+    }
 }

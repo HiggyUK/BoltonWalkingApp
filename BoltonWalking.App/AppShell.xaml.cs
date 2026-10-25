@@ -10,11 +10,12 @@ public partial class AppShell : Shell
 
         // Registered explicitly because these are pushed via GoToAsync rather
         // than being one of the TabBar's own items - RouteDetailsPage from the
-        // Routes tab, EventDetailsPage from the Book tab, Committee/SafetyGuide
+        // Routes tab, EventDetailsPage from the Book tab, Committee/SafetyGuide/Documents
         // from the More tab's menu.
         Routing.RegisterRoute(nameof(RouteDetailsPage), typeof(RouteDetailsPage));
         Routing.RegisterRoute(nameof(EventDetailsPage), typeof(EventDetailsPage));
         Routing.RegisterRoute(nameof(CommitteePage), typeof(CommitteePage));
+        Routing.RegisterRoute(nameof(DocumentsPage), typeof(DocumentsPage));
         Routing.RegisterRoute(nameof(SafetyGuidePage), typeof(SafetyGuidePage));
         Routing.RegisterRoute(nameof(FaqPage), typeof(FaqPage));
         Routing.RegisterRoute(nameof(DifficultyGuidePage), typeof(DifficultyGuidePage));

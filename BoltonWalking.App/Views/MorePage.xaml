@@ -106,6 +106,31 @@
             </Grid>
         </Border>
 
+        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 12"
+                Padding="16">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnDocumentsTapped" />
+            </Border.GestureRecognizers>
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <Label Text="Policies &amp; Documents"
+                           FontSize="17"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource Secondary}" />
+                    <Label Text="Club policies and documents to download"
+                           FontSize="13"
+                           TextColor="{DynamicResource TextMuted}" />
+                </VerticalStackLayout>
+                <Label Grid.Column="1"
+                       Text="&#8250;"
+                       FontSize="22"
+                       VerticalOptions="Center"
+                       TextColor="{DynamicResource TextMuted}" />
+            </Grid>
+        </Border>
+
     </VerticalStackLayout>
 
 </ContentPage>

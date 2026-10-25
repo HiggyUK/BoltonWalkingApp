@@ -52,6 +52,7 @@
     <button type="button" id="tab-events-btn">Events</button>
     <button type="button" id="tab-submissions-btn">Submissions</button>
     <button type="button" id="tab-feedback-btn">Feedback</button>
+    <button type="button" id="tab-documents-btn">Documents</button>
   </div>
 
   <div id="routes-tab">
@@ -266,6 +267,35 @@
     </div>
   </div>
 
+  <div id="documents-tab" style="display:none;">
+    <div class="card">
+      <label>Policies &amp; documents</label>
+      <div class="hint">Shown under More &gt; Policies &amp; Documents in the app, where members can download them. Pick one to edit, or leave on "New document" to add one.</div>
+      <select id="document-picker">
+        <option value="">-- New document --</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <label>Title</label>
+      <input type="text" id="document-title" placeholder="e.g. Safeguarding Policy">
+
+      <label>PDF</label>
+      <div class="hint" id="document-file-hint">No PDF uploaded yet.</div>
+      <div class="row">
+        <input type="file" id="document-file-input" accept=".pdf,application/pdf">
+        <button type="button" id="document-upload-btn">Upload</button>
+      </div>
+
+      <label>Last updated</label>
+      <div class="hint">Shown in the app next to the document. Set to today automatically when you upload a new PDF.</div>
+      <input type="date" id="document-last-updated">
+    </div>
+
+    <button id="save-document-btn">Save document</button>
+    <button class="secondary" id="delete-document-btn" style="display:none;">Delete this document</button>
+  </div>
+
   <button class="secondary" id="logout-btn">Sign out</button>
   <div id="status"></div>
 </div>
@@ -318,6 +348,7 @@
       loadEventList();
       loadSubmissionList();
       loadFeedbackList();
+      loadDocumentList();
     }
   });
 
@@ -330,16 +361,19 @@
   const tabEventsBtn = document.getElementById('tab-events-btn');
   const tabSubmissionsBtn = document.getElementById('tab-submissions-btn');
   const tabFeedbackBtn = document.getElementById('tab-feedback-btn');
+  const documentsTab = document.getElementById('documents-tab');
+  const tabDocumentsBtn = document.getElementById('tab-documents-btn');
 
   function showTab(tab, btn) {
-    [routesTab, eventsTab, submissionsTab, feedbackTab].forEach(t => t.style.display = t === tab ? 'block' : 'none');
-    [tabRoutesBtn, tabEventsBtn, tabSubmissionsBtn, tabFeedbackBtn].forEach(b => b.classList.toggle('active', b === btn));
+    [routesTab, eventsTab, submissionsTab, feedbackTab, documentsTab].forEach(t => t.style.display = t === tab ? 'block' : 'none');
+    [tabRoutesBtn, tabEventsBtn, tabSubmissionsBtn, tabFeedbackBtn, tabDocumentsBtn].forEach(b => b.classList.toggle('active', b === btn));
   }
 
   tabRoutesBtn.addEventListener('click', () => showTab(routesTab, tabRoutesBtn));
   tabEventsBtn.addEventListener('click', () => showTab(eventsTab, tabEventsBtn));
   tabSubmissionsBtn.addEventListener('click', () => showTab(submissionsTab, tabSubmissionsBtn));
   tabFeedbackBtn.addEventListener('click', () => showTab(feedbackTab, tabFeedbackBtn));
+  tabDocumentsBtn.addEventListener('click', () => showTab(documentsTab, tabDocumentsBtn));
 
   async function loadRouteList() {
     const snapshot = await db.collection('routes').get();
@@ -958,6 +992,144 @@
       showStatus('Failed to delete: ' + e.message, true);
     }
   });
+
+  // --- Documents (policies etc, listed under More in the app) ---
+  // One Firestore doc per document: { title, fileName, url, lastUpdated }
+  // where lastUpdated is a plain "yyyy-mm-dd" date. The PDF itself lives in
+  // Storage under documents/ - replacing it uploads a new copy rather than
+  // overwriting, so a link already handed out keeps working.
+  const documentPicker = document.getElementById('document-picker');
+  const deleteDocumentBtn = document.getElementById('delete-document-btn');
+  let editingDocumentId = null;
+  let documentFile = null; // { fileName, url } of the PDF currently attached
+
+  function todayDateInputValue() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }
+
+  function renderDocumentFileHint() {
+    const hint = document.getElementById('document-file-hint');
+    hint.innerHTML = '';
+    if (!documentFile) { hint.textContent = 'No PDF uploaded yet.'; return; }
+    hint.append('Current file: ');
+    const a = document.createElement('a');
+    a.href = documentFile.url;
+    a.target = '_blank';
+    a.textContent = documentFile.fileName;
+    hint.appendChild(a);
+  }
+
+  async function loadDocumentList() {
+    const snapshot = await db.collection('documents').get();
+    const docs = [];
+    snapshot.forEach(doc => docs.push({ id: doc.id, title: doc.data().title || '(untitled)' }));
+    docs.sort((a, b) => a.title.localeCompare(b.title));
+
+    documentPicker.innerHTML = '<option value="">-- New document --</option>';
+    docs.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = d.title;
+      documentPicker.appendChild(opt);
+    });
+  }
+
+  function clearDocumentForm() {
+    editingDocumentId = null;
+    documentFile = null;
+    documentPicker.value = '';
+    deleteDocumentBtn.style.display = 'none';
+    document.getElementById('document-title').value = '';
+    document.getElementById('document-file-input').value = '';
+    document.getElementById('document-last-updated').value = todayDateInputValue();
+    renderDocumentFileHint();
+  }
+
+  documentPicker.addEventListener('change', async () => {
+    const id = documentPicker.value;
+    if (!id) { clearDocumentForm(); return; }
+    const doc = await db.collection('documents').doc(id).get();
+    if (!doc.exists) { showStatus('Document not found - it may have been deleted.', true); return; }
+    const data = doc.data();
+    editingDocumentId = id;
+    documentFile = data.url ? { fileName: data.fileName || 'document.pdf', url: data.url } : null;
+    deleteDocumentBtn.style.display = 'inline-block';
+    document.getElementById('document-title').value = data.title || '';
+    document.getElementById('document-file-input').value = '';
+    document.getElementById('document-last-updated').value = data.lastUpdated || '';
+    renderDocumentFileHint();
+    showStatus(`Editing documents/${id}`, false);
+  });
+
+  document.getElementById('document-upload-btn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('document-file-input');
+    const uploadBtn = document.getElementById('document-upload-btn');
+    const file = (fileInput.files || [])[0];
+    if (!file) { showStatus('Choose a PDF first.', true); return; }
+    if (!file.name.toLowerCase().endsWith('.pdf')) { showStatus('Only PDF files can be uploaded here.', true); return; }
+
+    uploadBtn.disabled = true;
+    try {
+      showStatus(`Uploading ${file.name}...`, false);
+      const ref = storage.ref().child(`documents/${Date.now()}_${file.name}`);
+      await ref.put(file, { contentType: 'application/pdf' });
+      documentFile = { fileName: file.name, url: await ref.getDownloadURL() };
+      fileInput.value = '';
+      document.getElementById('document-last-updated').value = todayDateInputValue();
+      if (!document.getElementById('document-title').value.trim()) {
+        document.getElementById('document-title').value = file.name.replace(/\.pdf$/i, '');
+      }
+      renderDocumentFileHint();
+      showStatus(`Uploaded ${file.name} - click Save document to publish it.`, false);
+    } catch (e) {
+      showStatus('Upload failed: ' + e.message, true);
+    } finally {
+      uploadBtn.disabled = false;
+    }
+  });
+
+  document.getElementById('save-document-btn').addEventListener('click', async () => {
+    const saveBtn = document.getElementById('save-document-btn');
+    const title = document.getElementById('document-title').value.trim();
+    const lastUpdated = document.getElementById('document-last-updated').value;
+
+    if (!title) { showStatus('A title is required.', true); return; }
+    if (!documentFile) { showStatus('Upload a PDF first.', true); return; }
+    if (!lastUpdated) { showStatus('Set the last updated date.', true); return; }
+
+    saveBtn.disabled = true;
+    try {
+      const ref = editingDocumentId
+        ? db.collection('documents').doc(editingDocumentId)
+        : db.collection('documents').doc();
+      await ref.set({ title, fileName: documentFile.fileName, url: documentFile.url, lastUpdated });
+      editingDocumentId = ref.id;
+      deleteDocumentBtn.style.display = 'inline-block';
+      await loadDocumentList();
+      documentPicker.value = ref.id;
+      showStatus(`Saved "${title}" - it's now available in the app.`, false);
+    } catch (e) {
+      showStatus('Failed to save: ' + e.message, true);
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+
+  deleteDocumentBtn.addEventListener('click', async () => {
+    if (!editingDocumentId) return;
+    if (!confirm('Delete this document from the app? This can\'t be undone.')) return;
+    try {
+      await db.collection('documents').doc(editingDocumentId).delete();
+      showStatus('Document deleted.', false);
+      clearDocumentForm();
+      await loadDocumentList();
+    } catch (e) {
+      showStatus('Failed to delete: ' + e.message, true);
+    }
+  });
+
+  clearDocumentForm();
 
   // --- Feedback (General/App/Route-Walk, from the app's Feedback tab) ---
   const feedbackPicker = document.getElementById('feedback-picker');

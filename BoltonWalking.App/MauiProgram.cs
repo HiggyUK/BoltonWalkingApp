@@ -82,6 +82,7 @@ public static class MauiProgram
         builder.Services.AddTransient<RouteDetailsViewModel>();
         builder.Services.AddTransient<EventDetailsViewModel>();
         builder.Services.AddTransient<CommitteeViewModel>();
+        builder.Services.AddTransient<DocumentsViewModel>();
         builder.Services.AddTransient<BookViewModel>();
         builder.Services.AddTransient<SubmitRouteViewModel>();
         builder.Services.AddTransient<FeedbackFormViewModel>();
@@ -95,6 +96,7 @@ public static class MauiProgram
         builder.Services.AddTransient<FeedbackPage>();
         builder.Services.AddTransient<FeedbackFormPage>();
         builder.Services.AddTransient<CommitteePage>();
+        builder.Services.AddTransient<DocumentsPage>();
         builder.Services.AddTransient<MorePage>();
         builder.Services.AddTransient<SafetyGuidePage>();
         builder.Services.AddTransient<FaqPage>();
