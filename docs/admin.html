@@ -167,18 +167,18 @@
 
       <label>Start time / End time</label>
       <div class="row">
-        <input type="time" id="event-start-time">
-        <input type="time" id="event-end-time">
+        <input type="time" id="event-start-time" value="19:00">
+        <input type="time" id="event-end-time" value="21:00">
       </div>
 
       <label>Ticket Tailor link</label>
       <input type="text" id="event-ticket-link" placeholder="https://www.tickettailor.com/events/...">
 
       <label>Booking opens</label>
-      <div class="hint" id="booking-opens-hint">Monday walks: prior Thursday 18:00 &#8226; Wednesday walks: prior Sunday 18:00. The app applies this automatically - leave blank unless this walk needs a different opening time than usual.</div>
+      <div class="hint" id="booking-opens-hint">Monday walks: prior Thursday 18:00 &#8226; Wednesday walks: prior Sunday 18:00. The app applies this automatically - leave the date blank unless this walk needs a different opening time than usual (the time only applies once a date is set).</div>
       <div class="row">
         <input type="date" id="event-booking-date">
-        <input type="time" id="event-booking-time">
+        <input type="time" id="event-booking-time" value="18:00">
       </div>
     </div>
 
@@ -632,16 +632,23 @@
     loadFormFromEvent(id, doc.data());
   });
 
+  // Walks almost always run 19:00-21:00, with booking opening at 18:00 -
+  // also set as the inputs' value attributes so the very first form shown
+  // has them too.
+  const DEFAULT_START_TIME = '19:00';
+  const DEFAULT_END_TIME = '21:00';
+  const DEFAULT_BOOKING_TIME = '18:00';
+
   function clearEventForm() {
     editingEventId = null;
     eventPicker.value = '';
     deleteEventBtn.style.display = 'none';
     document.getElementById('event-date').value = '';
-    document.getElementById('event-start-time').value = '';
-    document.getElementById('event-end-time').value = '';
+    document.getElementById('event-start-time').value = DEFAULT_START_TIME;
+    document.getElementById('event-end-time').value = DEFAULT_END_TIME;
     document.getElementById('event-ticket-link').value = '';
     document.getElementById('event-booking-date').value = '';
-    document.getElementById('event-booking-time').value = '';
+    document.getElementById('event-booking-time').value = DEFAULT_BOOKING_TIME;
     showStatus('', false);
     statusEl.style.display = 'none';
   }
@@ -674,7 +681,7 @@
     const suggestion = suggestedBookingOpensAt(document.getElementById('event-date').value);
     const hint = document.getElementById('booking-opens-hint');
     hint.textContent = suggestion
-      ? `This walk's day normally opens ${suggestion.date} at ${suggestion.time} - leave the fields below blank to use that automatically.`
+      ? `This walk's day normally opens ${suggestion.date} at ${suggestion.time} - leave the date below blank to use that automatically.`
       : defaultHintText;
   });
 
@@ -697,7 +704,7 @@
     // leave the fields blank for that; only show a value here if it's a real override.
     const opensIsSet = ev.bookingOpensAt && !ev.bookingOpensAt.startsWith('0001-01-01');
     document.getElementById('event-booking-date').value = opensIsSet ? toDateInputValue(ev.bookingOpensAt) : '';
-    document.getElementById('event-booking-time').value = opensIsSet ? toTimeInputValue(ev.bookingOpensAt) : '';
+    document.getElementById('event-booking-time').value = opensIsSet ? toTimeInputValue(ev.bookingOpensAt) : DEFAULT_BOOKING_TIME;
     showStatus(`Editing events/${id}`, false);
   }
 
@@ -729,8 +736,11 @@
     if (endTime <= startTime) { showStatus('End time must be after start time.', true); return; }
     if (!ticketLink) { showStatus('Ticket Tailor link is required.', true); return; }
     if (!Number.isFinite(routeId)) { showStatus('Pick a route.', true); return; }
-    if ((bookingDate && !bookingTime) || (!bookingDate && bookingTime)) {
-      showStatus('Set both the booking-opens date and time, or leave both blank.', true);
+    // The booking time is always prefilled (DEFAULT_BOOKING_TIME), so it's
+    // the date alone that decides whether this is an override - no date
+    // means "apply the standard Mon/Wed rule" and the time is ignored.
+    if (bookingDate && !bookingTime) {
+      showStatus('Set a booking-opens time, or clear the booking-opens date.', true);
       return;
     }
 
