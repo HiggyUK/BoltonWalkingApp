@@ -56,6 +56,12 @@ public partial class RouteDetailsViewModel : ObservableObject
             IsBusy = true;
             Route = await routesService.GetRouteAsync(id);
         }
+        catch (Exception ex)
+        {
+            // Fire-and-forget from OnRouteIdChanged, so an unhandled failure
+            // here would otherwise just leave a silently blank page.
+            StatusMessage = $"Couldn't load this route: {ex.Message}";
+        }
         finally
         {
             IsBusy = false;

@@ -55,7 +55,17 @@ public static class MauiProgram
         });
 #endif
 
-        builder.Services.AddSingleton<HttpClient>();
+        // Firestore's REST responses carry no Cache-Control header, which
+        // leaves the platform HTTP stack (NSURLCache on iOS) free to serve a
+        // stale copy - so edits made in the admin page, like a GPX added to
+        // an existing route, wouldn't show up even after Refresh. no-cache
+        // makes every request go back to the server.
+        builder.Services.AddSingleton(_ =>
+        {
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { NoCache = true };
+            return httpClient;
+        });
         builder.Services.AddSingleton<FirestoreClient>();
         builder.Services.AddSingleton<FirebaseStorageClient>();
         builder.Services.AddSingleton<IRoutesService, RoutesService>();

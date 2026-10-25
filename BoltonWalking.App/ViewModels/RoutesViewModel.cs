@@ -98,6 +98,14 @@ public partial class RoutesViewModel : ObservableObject
             Routes.Clear();
             foreach (var item in items)
                 Routes.Add(item);
+
+            // An open popup would otherwise keep showing the pre-refresh copy.
+            if (SelectedRoute is not null)
+            {
+                SelectedRoute = items.FirstOrDefault(r => r.Id == SelectedRoute.Id);
+                IsPopupVisible = SelectedRoute is not null;
+            }
+
             OnPropertyChanged(nameof(FilteredRoutes));
         }
         catch (Exception ex)

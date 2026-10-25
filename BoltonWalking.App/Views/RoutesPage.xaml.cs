@@ -41,8 +41,9 @@ public partial class RoutesPage : ContentPage
         TryAttachIosPinColoring();
 #endif
 
+        // Pins are rebuilt from OnViewModelPropertyChanged once the load
+        // raises FilteredRoutes - the same path the toolbar Refresh button takes.
         await viewModel.LoadRoutesCommand.ExecuteAsync(null);
-        BuildPins();
     }
 
 #if IOS
@@ -79,7 +80,10 @@ public partial class RoutesPage : ContentPage
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(RoutesViewModel.SelectedDifficulty) or nameof(RoutesViewModel.SearchText))
+        // FilteredRoutes is raised by a reload (OnAppearing or Refresh) as well
+        // as by the difficulty filter and search text, so this one check keeps
+        // the pins in step with all of them.
+        if (e.PropertyName == nameof(RoutesViewModel.FilteredRoutes))
             BuildPins();
     }
 
