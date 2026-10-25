@@ -20,11 +20,14 @@
     <MarketingVersion>1.5</MarketingVersion>
 
     <!-- OLE Automation date: whole part = days since 30 Dec 1899, fractional
-         part = time of day (e.g. 46237.47 = 03 Aug 2026, ~11:23). Splitting
+         part = time of day (e.g. 46237.474 = 03 Aug 2026, ~11:23). Splitting
          it gives a build id that's always unique and always increasing.
          ApplicationVersion (Android versionCode / iOS CFBundleVersion) must
-         be a single plain integer, so it drops the dot: same digits, no ".". -->
-    <BuildOADate>$([System.DateTime]::Now.ToOADate().ToString('F2'))</BuildOADate>
+         be a single plain integer, so it drops the dot: same digits, no ".".
+         Three decimals (~90 second steps) - two (~14 minute steps) let two
+         release builds started 10 minutes apart collide, which both stores
+         reject. Moving 2 -> 3 digits only ever made the number bigger. -->
+    <BuildOADate>$([System.DateTime]::Now.ToOADate().ToString('F3'))</BuildOADate>
     <BuildOADateInt>$(BuildOADate.Split('.')[0])</BuildOADateInt>
     <BuildOADateFrac>$(BuildOADate.Split('.')[1])</BuildOADateFrac>
     <ApplicationDisplayVersion>$(MarketingVersion).$(BuildOADateInt).$(BuildOADateFrac)</ApplicationDisplayVersion>
